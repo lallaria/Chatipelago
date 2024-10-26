@@ -1,0 +1,16 @@
+{
+  "name": "chatipelago",
+  "version": "0.0.0",
+  "description": "Chatipelago",
+  "main": "server.js",
+  "author": {
+    "name": ""
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1"
+  },
+  "eslintConfig": {},
+  "dependencies": {
+    "archipelago.js": "^1.1.0"
+  }
+}
