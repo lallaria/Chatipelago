@@ -38,18 +38,27 @@ var goal = false;
 var server = require('./server.js');
 var webhook = require('./webhook-put.js');
 var chatipelago = require('./archipelagoHelper.js');
+var config = require('./config.js');
 
 server.setOnEvent(onEvent);
 chatipelago.setOnItemRecieved(onItem);
 
 function onEvent(message) {
     switch (message) {
-        case '/table':
+        /*case '/table':
             attemptClaimTable();
             break;
         case '/button':
             attemptPressButton();
+            break;*/
+        case '/search':
+            attemptSearch();
             break;
+        case '/loot':
+            attemptLoot();
+            break;
+
+        
         default:
             wrongCommand();
             break;
@@ -59,6 +68,59 @@ function onEvent(message) {
 function onItem(id, name, player) {
     if (!goal) {
         webhook.postInChat(`${player} found our ${name}`);
+    }
+}
+
+let currentLocation;
+let searchAttempts = 0;
+let lootAttemps = 0;
+let lastCheckTime = new Date(0); 
+
+function isInCooldown() {
+    return (new Date() - lastCheckTime) < config.gameSettings.checkCooldown * 1000;
+}
+
+function notifyCooldown() {
+    webhook.postInChat('You are now rested. Use !search to go to another location')
+}
+
+function attemptLoot() {
+    if(isInCooldown) return;
+    if(!currentLocation) {
+        webhook.postInChat("You first need to find a location! Use !search.");
+        return;
+    }
+    lootAttemps++;
+    if(lootAttemps >= config.gameSettings.lootAttemptsRequired) {
+        if(Math.random() < config.gameSettings.lootChance) {
+            currentLocation = undefined;
+            lastCheckTime = new Date();
+            lootAttemps = 0;
+            searchAttempts = 0;
+            chatipelago.claimCheck(currentLocation);
+            itemName = 'PLACEHOLDER' // TODO: how do I get this name???
+            webhook.postInChat(`You found ${itemName}. You need to rest before going to another location.`);
+            setTimeout(notifyCooldown, config.gameSettings.checkCooldown*1000);
+        } else {
+            lootAttemps = 0;
+            searchAttempts = 0;
+            webhook.postInChat(`You couldn't get the item from ${currentLocation}. Use !loot to keep trying or !search to go somewhere else.`);
+        }
+    }
+}
+
+function attemptSearch() {
+    if(isInCooldown) return;
+    searchAttempts++
+    if(searchAttempts >= config.gameSettings.searchAttemptsRequired) {
+        const currentLocation = chatipelago.getCheckableLocation();
+        if(!currentLocation) {
+            webhook.postInChat("No available locations");
+        } else {
+            lootAttemps = 0;
+            searchAttempts = 0;
+            webhook.postInChat(`You are now at ${currentLocation}. Use !loot to open it or !search to go somewhere else.`);
+        }
     }
 }
 
