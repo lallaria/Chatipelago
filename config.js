@@ -5,5 +5,13 @@ module.exports = {
 		port: 0,
 		playerName: "",
 	},
-	webhookUrl: ""
+	webhookUrl: "",
+	gameSettings: 
+	{
+		searchAttemptsRequired: 5,
+		lootAttemptsRequired: 5,
+		lootChance: 0.7,
+		allowMultipleMessagesFromSameUser: false, // todo
+		checkCooldown: 300, // in seconds
+	}
 }

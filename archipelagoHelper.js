@@ -39,6 +39,21 @@ module.exports = {
         static A_COOL_FILLER_ITEM = 69696967;
     },
 
+    REQUIREMENTS: {
+        [this.LOCATIONS.BIG_RED_BUTTON]: [ITEMS.BUTTON_ACTIONVATION],
+    },
+
+    getCheckableLocation: function (itemId) {
+        const validLocations = client.locations.missing.filter((location) => {
+            const requirements = this.REQUIREMENTS[location] ?? [];
+            return requirements.all((requirement) => this.isItemObtained(requirement));
+        });
+
+        if(validLocations.length === 0) return;
+
+        return validLocations[Math.floor(Math.random() * validLocations.length)];
+    },
+
     isItemObtained: function (itemId) {
         console.log(client.items.received);
         return client.items.received.some(item => item.item === itemId);
