@@ -32,3 +32,53 @@ We can guarantee a 100% chance.
 
 
 */
+
+var goal = false;
+
+var server = require('./server.js');
+var webhook = require('./webhook-put.js');
+var chatipelago = require('./archipelagoHelper.js');
+
+server.setOnEvent(onEvent);
+chatipelago.setOnItemRecieved(onItem);
+
+function onEvent(message) {
+    switch (message) {
+        case '/table':
+            attemptClaimTable();
+            break;
+        case '/button':
+            attemptPressButton();
+            break;
+        default:
+            wrongCommand();
+            break;
+    }
+}
+
+function onItem(id, name, player) {
+    if (!goal) {
+        webhook.postInChat(`${player} found our ${name}`);
+    }
+}
+
+function attemptClaimTable() {
+    webhook.postInChat("Getting the item on the desk");
+    chatipelago.claimCheck(chatipelago.LOCATIONS.ITEM_ON_DESK);
+}
+
+function attemptPressButton() {
+    if (chatipelago.isItemObtained(chatipelago.ITEMS.BUTTON_ACTIONVATION)) {
+        webhook.postInChat("Pressing the button");
+        chatipelago.claimCheck(chatipelago.LOCATIONS.BIG_RED_BUTTON);
+        chatipelago.goal();
+        goal = true;
+    }
+    else {
+        webhook.postInChat("You need the button activation");
+    }
+}
+
+function wrongCommand() {
+    webhook.postInChat("This is not a valid location");
+}
