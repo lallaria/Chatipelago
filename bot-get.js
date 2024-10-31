@@ -51,10 +51,10 @@ function onEvent(message) {
         case '/button':
             attemptPressButton();
             break;*/
-        case '/search':
+        case '/!search':
             attemptSearch();
             break;
-        case '/loot':
+        case '/!loot':
             attemptLoot();
             break;
 
@@ -85,7 +85,7 @@ function notifyCooldown() {
 }
 
 function attemptLoot() {
-    if(isInCooldown) return;
+    if(isInCooldown()) return;
     if(!currentLocation) {
         webhook.postInChat("You first need to find a location! Use !search.");
         return;
@@ -93,33 +93,34 @@ function attemptLoot() {
     lootAttemps++;
     if(lootAttemps >= config.gameSettings.lootAttemptsRequired) {
         if(Math.random() < config.gameSettings.lootChance) {
+            chatipelago.claimCheck(currentLocation);
             currentLocation = undefined;
             lastCheckTime = new Date();
             lootAttemps = 0;
             searchAttempts = 0;
-            chatipelago.claimCheck(currentLocation);
             itemName = 'PLACEHOLDER' // TODO: how do I get this name???
             webhook.postInChat(`You found ${itemName}. You need to rest before going to another location.`);
             setTimeout(notifyCooldown, config.gameSettings.checkCooldown*1000);
+            // TODO: add goal check
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`You couldn't get the item from ${currentLocation}. Use !loot to keep trying or !search to go somewhere else.`);
+            webhook.postInChat(`You couldn't get the item from ${chatipelago.getLocationName(currentLocation)}. Use !loot to keep trying or !search to go somewhere else.`);
         }
     }
 }
 
 function attemptSearch() {
-    if(isInCooldown) return;
+    if(isInCooldown()) return;
     searchAttempts++
     if(searchAttempts >= config.gameSettings.searchAttemptsRequired) {
-        const currentLocation = chatipelago.getCheckableLocation();
+        currentLocation = chatipelago.getCheckableLocation();
         if(!currentLocation) {
             webhook.postInChat("No available locations");
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`You are now at ${currentLocation}. Use !loot to open it or !search to go somewhere else.`);
+            webhook.postInChat(`You are now at ${chatipelago.getLocationName(currentLocation)}. Use !loot to open it or !search to go somewhere else.`);
         }
     }
 }
