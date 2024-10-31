@@ -15,7 +15,7 @@ const connectionInfo = {
 const client = new archipelago.Client();
 
 client.connect(connectionInfo)
-    .then(() => { console.log("connected"); client.updateStatus(archipelago.CLIENT_STATUS.PLAYING); })
+    .then((x) => { console.log(x);console.log("connected"); client.updateStatus(archipelago.CLIENT_STATUS.PLAYING); })
     .catch((error) => { console.error("Failed to connect:", error); });
 
 var onItemRecieved;
@@ -27,26 +27,30 @@ client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet, messa
     }
 });
 
-module.exports = {
-    LOCATIONS: class {
-        static BIG_RED_BUTTON = 69696969;
-        static ITEM_ON_DESK = 69696968;
-    },
+class LOCATIONS {
+    static BIG_RED_BUTTON = 69696969;
+    static ITEM_ON_DESK = 69696968;
+}
 
-    ITEMS: class {
-        static FEELING_OF_SATISFACTION = 69696969;
-        static BUTTON_ACTIONVATION = 69696968;
-        static A_COOL_FILLER_ITEM = 69696967;
-    },
+class ITEMS {
+    static FEELING_OF_SATISFACTION = 69696969;
+    static BUTTON_ACTIONVATION = 69696968;
+    static A_COOL_FILLER_ITEM = 69696967;
+}
+
+module.exports = {
+    LOCATIONS,
+
+    ITEMS,
 
     REQUIREMENTS: {
-        [this.LOCATIONS.BIG_RED_BUTTON]: [ITEMS.BUTTON_ACTIONVATION],
+        [LOCATIONS.BIG_RED_BUTTON]: [ITEMS.BUTTON_ACTIONVATION],
     },
 
-    getCheckableLocation: function (itemId) {
+    getCheckableLocation: function () {
         const validLocations = client.locations.missing.filter((location) => {
             const requirements = this.REQUIREMENTS[location] ?? [];
-            return requirements.all((requirement) => this.isItemObtained(requirement));
+            return requirements.every((requirement) => this.isItemObtained(requirement));
         });
 
         if(validLocations.length === 0) return;
@@ -65,6 +69,10 @@ module.exports = {
 
     setOnItemRecieved: function (fct) {
         onItemRecieved = fct;
+    },
+
+    getLocationName: function (location) {
+        return client.locations.name(gameName, location)
     },
 
     goal: function () {
