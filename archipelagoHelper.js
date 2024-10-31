@@ -36,24 +36,30 @@ client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet, messa
     }
 });
 
+// Only need to have locations and ids that will be used for requirements and goals
 class LOCATIONS {
     static BIG_RED_BUTTON = 69696969;
-    static ITEM_ON_DESK = 69696968;
+    // static ITEM_ON_DESK = 69696968;
 }
 
 class ITEMS {
-    static FEELING_OF_SATISFACTION = 69696969;
+    // static FEELING_OF_SATISFACTION = 69696969;
     static BUTTON_ACTIONVATION = 69696968;
-    static A_COOL_FILLER_ITEM = 69696967;
+    // static A_COOL_FILLER_ITEM = 69696967;
 }
 
 module.exports = {
-    LOCATIONS,
-
-    ITEMS,
-
     REQUIREMENTS: {
         [LOCATIONS.BIG_RED_BUTTON]: [ITEMS.BUTTON_ACTIONVATION],
+    },
+
+    GOALS: [LOCATIONS.BIG_RED_BUTTON],
+
+    checkGoal: function (lastLocation) {
+        // include lastLocation because client.locations.checked may not be updated yer
+        const checked = [...client.locations.checked,lastLocation];
+        console.log(checked, this.GOALS);
+        return this.GOALS.every((goal) => checked.includes(goal));
     },
 
     maybeTriggerItemLocationMap: function () {
@@ -84,7 +90,7 @@ module.exports = {
     },
 
     claimCheck: function (locationId) {
-        //client.locations.check(locationId);
+        client.locations.check(locationId);
     },
 
     setOnItemRecieved: function (fct) {
