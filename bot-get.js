@@ -94,16 +94,21 @@ function attemptLoot() {
     lootAttemps++;
     if(lootAttemps >= config.gameSettings.lootAttemptsRequired) {
         if(Math.random() < config.gameSettings.lootChance) {
-            chatipelago.claimCheck(currentLocation);
-            itemName = chatipelago.getItemNameByLocation(currentLocation)
+            const triggeredLocation = currentLocation;
             currentLocation = undefined;
             lastCheckTime = new Date();
             lootAttemps = 0;
             searchAttempts = 0;
-            
+            chatipelago.claimCheck(triggeredLocation);
+            itemName = chatipelago.getItemNameByLocation(triggeredLocation)
             webhook.postInChat(`You found ${itemName}. You need to rest before going to another location.`);
+            if(chatipelago.checkGoal(triggeredLocation)) {
+                chatipelago.goal();
+                webhook.postInChat('CONGLATURATIONS');
+                return;
+            }
             setTimeout(notifyCooldown, config.gameSettings.checkCooldown*1000);
-            // TODO: add goal check
+            
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
@@ -127,7 +132,7 @@ function attemptSearch() {
     }
 }
 
-function attemptClaimTable() {
+/*function attemptClaimTable() {
     webhook.postInChat("Getting the item on the desk");
     chatipelago.claimCheck(chatipelago.LOCATIONS.ITEM_ON_DESK);
 }
@@ -142,7 +147,7 @@ function attemptPressButton() {
     else {
         webhook.postInChat("You need the button activation");
     }
-}
+}*/
 
 function wrongCommand() {
     webhook.postInChat("This is not a valid location");
