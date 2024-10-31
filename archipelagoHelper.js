@@ -15,10 +15,19 @@ const connectionInfo = {
 const client = new archipelago.Client();
 
 client.connect(connectionInfo)
-    .then((x) => { console.log(x);console.log("connected"); client.updateStatus(archipelago.CLIENT_STATUS.PLAYING); })
+    .then(() => {
+        console.log("connected");
+        client.updateStatus(archipelago.CLIENT_STATUS.PLAYING);
+    })
     .catch((error) => { console.error("Failed to connect:", error); });
 
 var onItemRecieved;
+
+const locationItem = {};
+client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({locations}) => {
+    locations?.forEach(({item, player, location}) => locationItem[location] = {player, item});
+    console.log('items mapped to locations', locationItem)
+});
 client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet, message) => {
     var items = packet["items"];
     for (i = 0; i < items.length; ++i) {
@@ -47,6 +56,18 @@ module.exports = {
         [LOCATIONS.BIG_RED_BUTTON]: [ITEMS.BUTTON_ACTIONVATION],
     },
 
+    maybeTriggerItemLocationMap: function () {
+        if(Object.entries(locationItem).length> 0) return
+        // scout all locations to map items locations
+        client.locations.scout(0, ...client.locations.checked, ...client.locations.missing);
+    },
+
+    getItemNameByLocation: function (location) {
+        const {player, item} = locationItem[location] ?? {};
+        if(!player || !item) return;
+        return `${client.items.name(player,item)} for ${client.players.name(player)}`;
+    },
+
     getCheckableLocation: function () {
         const validLocations = client.locations.missing.filter((location) => {
             const requirements = this.REQUIREMENTS[location] ?? [];
@@ -59,12 +80,11 @@ module.exports = {
     },
 
     isItemObtained: function (itemId) {
-        console.log(client.items.received);
         return client.items.received.some(item => item.item === itemId);
     },
 
     claimCheck: function (locationId) {
-        client.locations.check(locationId);
+        //client.locations.check(locationId);
     },
 
     setOnItemRecieved: function (fct) {

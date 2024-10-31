@@ -44,6 +44,7 @@ server.setOnEvent(onEvent);
 chatipelago.setOnItemRecieved(onItem);
 
 function onEvent(message) {
+    chatipelago.maybeTriggerItemLocationMap();
     switch (message) {
         /*case '/table':
             attemptClaimTable();
@@ -94,11 +95,12 @@ function attemptLoot() {
     if(lootAttemps >= config.gameSettings.lootAttemptsRequired) {
         if(Math.random() < config.gameSettings.lootChance) {
             chatipelago.claimCheck(currentLocation);
+            itemName = chatipelago.getItemNameByLocation(currentLocation)
             currentLocation = undefined;
             lastCheckTime = new Date();
             lootAttemps = 0;
             searchAttempts = 0;
-            itemName = 'PLACEHOLDER' // TODO: how do I get this name???
+            
             webhook.postInChat(`You found ${itemName}. You need to rest before going to another location.`);
             setTimeout(notifyCooldown, config.gameSettings.checkCooldown*1000);
             // TODO: add goal check
