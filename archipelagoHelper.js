@@ -22,7 +22,7 @@ client.connect(connectionInfo)
     .catch((error) => { console.error("Failed to connect:", error); });
 
 var onItemRecieved;
-
+const notifiedItems =[]
 const locationItem = {};
 client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({locations}) => {
     locations?.forEach(({item, player, location}) => locationItem[location] = {player, item});
@@ -31,8 +31,11 @@ client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({locations}) =
 client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet, message) => {
     var items = packet["items"];
     for (i = 0; i < items.length; ++i) {
+        const itemId = items[i]["item"];
+        if(notifiedItems.includes(itemId)) continue;
+        notifiedItems.push(itemId);
         console.log("Item received", i, items[i]);
-        onItemRecieved(items[i]["item"], client.items.name(gameName, items[i]["item"]), client.players.name(items[i]["player"]));
+        onItemRecieved(itemId, client.items.name(gameName, itemId), client.players.name(items[i]["player"]));
     }
 });
 
