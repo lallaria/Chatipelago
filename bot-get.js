@@ -37,29 +37,21 @@ var goal = false;
 
 var server = require('./server.js');
 var webhook = require('./webhook-put.js');
-var chatipelago = require('./archipelagoHelper.js');
+var archipelagoHelper = require('./archipelagoHelper.js');
 var config = require('./config.js');
 
 server.setOnEvent(onEvent);
-chatipelago.setOnItemRecieved(onItem);
+archipelagoHelper.setOnItemRecieved(onItem);
 
 function onEvent(message) {
-    chatipelago.maybeTriggerItemLocationMap();
+    archipelagoHelper.maybeTriggerItemLocationMap();
     switch (message) {
-        /*case '/table':
-            attemptClaimTable();
-            break;
-        case '/button':
-            attemptPressButton();
-            break;*/
         case '/!search':
             attemptSearch();
             break;
         case '/!loot':
             attemptLoot();
             break;
-
-        
         default:
             wrongCommand();
             break;
@@ -99,11 +91,11 @@ function attemptLoot() {
             lastCheckTime = new Date();
             lootAttemps = 0;
             searchAttempts = 0;
-            chatipelago.claimCheck(triggeredLocation);
-            itemName = chatipelago.getItemNameByLocation(triggeredLocation)
+            archipelagoHelper.claimCheck(triggeredLocation);
+            itemName = archipelagoHelper.getItemNameByLocation(triggeredLocation)
             webhook.postInChat(`You found ${itemName}. You need to rest before going to another location.`);
-            if(chatipelago.checkGoal(triggeredLocation)) {
-                chatipelago.goal();
+            if(archipelagoHelper.checkGoal(triggeredLocation)) {
+                archipelagoHelper.goal();
                 webhook.postInChat('CONGLATURATIONS');
                 return;
             }
@@ -112,7 +104,7 @@ function attemptLoot() {
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`You couldn't get the item from ${chatipelago.getLocationName(currentLocation)}. Use !loot to keep trying or !search to go somewhere else.`);
+            webhook.postInChat(`You couldn't get the item from ${archipelagoHelper.getLocationName(currentLocation)}. Use !loot to keep trying or !search to go somewhere else.`);
         }
     }
 }
@@ -121,33 +113,16 @@ function attemptSearch() {
     if(isInCooldown()) return;
     searchAttempts++
     if(searchAttempts >= config.gameSettings.searchAttemptsRequired) {
-        currentLocation = chatipelago.getCheckableLocation();
+        currentLocation = archipelagoHelper.getCheckableLocation();
         if(!currentLocation) {
             webhook.postInChat("No available locations");
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`You are now at ${chatipelago.getLocationName(currentLocation)}. Use !loot to open it or !search to go somewhere else.`);
+            webhook.postInChat(`You are now at ${archipelagoHelper.getLocationName(currentLocation)}. Use !loot to open it or !search to go somewhere else.`);
         }
     }
 }
-
-/*function attemptClaimTable() {
-    webhook.postInChat("Getting the item on the desk");
-    chatipelago.claimCheck(chatipelago.LOCATIONS.ITEM_ON_DESK);
-}
-
-function attemptPressButton() {
-    if (chatipelago.isItemObtained(chatipelago.ITEMS.BUTTON_ACTIONVATION)) {
-        webhook.postInChat("Pressing the button");
-        chatipelago.claimCheck(chatipelago.LOCATIONS.BIG_RED_BUTTON);
-        chatipelago.goal();
-        goal = true;
-    }
-    else {
-        webhook.postInChat("You need the button activation");
-    }
-}*/
 
 function wrongCommand() {
     webhook.postInChat("This is not a valid location");
