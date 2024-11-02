@@ -58,7 +58,7 @@ class ITEMS {
     // static FEELING_OF_SATISFACTION = 69696969;
     static MAGPIE1 = 10535;
     static MAGPIE2 = 10536;
-    static MAGPIE3 = 10537
+    static MAGPIE3 = 10537;
     // static A_COOL_FILLER_ITEM = 69696967;
 }
 
