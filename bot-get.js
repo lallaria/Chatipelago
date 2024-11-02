@@ -53,39 +53,38 @@ function onEvent(message) {
             attemptLoot();
             break;
         default:
-            wrongCommand();
             break;
     }
 }
 
 function onItem(id, name, player) {
     if (!goal) {
-        webhook.postInChat(`${player} found our ${name}`);
+        webhook.postInChat(`Look! ${player} found ${name}`);
     }
 }
 
 let currentLocation;
 let searchAttempts = 0;
 let lootAttemps = 0;
-let lastCheckTime = new Date(0); 
+let lastCheckTime = new Date(0);
 
 function isInCooldown() {
     return (new Date() - lastCheckTime) < config.gameSettings.checkCooldown * 1000;
 }
 
 function notifyCooldown() {
-    webhook.postInChat('You are now rested. Use !search to go to another location')
+    webhook.postInChat('I\'m back! Use !search to look for something shiny.')
 }
 
 function attemptLoot() {
-    if(isInCooldown()) return;
-    if(!currentLocation) {
-        webhook.postInChat("You first need to find a location! Use !search.");
+    if (isInCooldown()) return;
+    if (!currentLocation) {
+        webhook.postInChat("Ok, I'll open this cache of air. Nothing here, maybe you should use !search.");
         return;
     }
     lootAttemps++;
-    if(lootAttemps >= config.gameSettings.lootAttemptsRequired) {
-        if(Math.random() < config.gameSettings.lootChance) {
+    if (lootAttemps >= config.gameSettings.lootAttemptsRequired) {
+        if (Math.random() < config.gameSettings.lootChance) {
             const triggeredLocation = currentLocation;
             currentLocation = undefined;
             lastCheckTime = new Date();
@@ -93,37 +92,33 @@ function attemptLoot() {
             searchAttempts = 0;
             archipelagoHelper.claimCheck(triggeredLocation);
             itemName = archipelagoHelper.getItemNameByLocation(triggeredLocation)
-            webhook.postInChat(`You found ${itemName}. You need to rest before going to another location.`);
-            if(archipelagoHelper.checkGoal(triggeredLocation)) {
+            webhook.postInChat(`Whoa, check out this ${itemName}. I gotta run to gossip girl, brb.`);
+            if (archipelagoHelper.checkGoal(triggeredLocation)) {
                 archipelagoHelper.goal();
-                webhook.postInChat('CONGLATURATIONS');
+                webhook.postInChat('Did...did we find everything already?!');
                 return;
             }
-            setTimeout(notifyCooldown, config.gameSettings.checkCooldown*1000);
-            
+            setTimeout(notifyCooldown, config.gameSettings.checkCooldown * 1000);
+
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`You couldn't get the item from ${archipelagoHelper.getLocationName(currentLocation)}. Use !loot to keep trying or !search to go somewhere else.`);
+            webhook.postInChat(`Ah shit I dropped the item in ${archipelagoHelper.getLocationName(currentLocation)}. Use !loot to find it again or !search to abandon this check until RNG brings us back.`);
         }
     }
 }
 
 function attemptSearch() {
-    if(isInCooldown()) return;
+    if (isInCooldown()) return;
     searchAttempts++
-    if(searchAttempts >= config.gameSettings.searchAttemptsRequired) {
+    if (searchAttempts >= config.gameSettings.searchAttemptsRequired) {
         currentLocation = archipelagoHelper.getCheckableLocation();
-        if(!currentLocation) {
+        if (!currentLocation) {
             webhook.postInChat("No available locations");
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`You are now at ${archipelagoHelper.getLocationName(currentLocation)}. Use !loot to open it or !search to go somewhere else.`);
+            webhook.postInChat(`Check out this ${archipelagoHelper.getLocationName(currentLocation)}. Use !loot to open it or !search if you think it looks funny.`);
         }
     }
-}
-
-function wrongCommand() {
-    webhook.postInChat("This is not a valid location");
 }
