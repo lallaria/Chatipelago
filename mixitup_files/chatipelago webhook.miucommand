@@ -1,1 +1,33 @@
-{"$type":"MixItUp.Base.Model.Commands.WebhookCommandModel, MixItUp.Base","JSONParameters":[{"$type":"MixItUp.Base.Model.Commands.WebhookJSONParameter, MixItUp.Base","JSONParameterName":"text","SpecialIdentifierName":"text"}],"ID":"e16791fa-4ae1-4713-b3b9-08dc9d316ad3","Name":"chatipelago","Type":10,"IsEnabled":true,"Unlocked":false,"IsEmbedded":false,"GroupName":null,"Triggers":[],"Requirements":{"$type":"MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base","Requirements":[]},"Actions":[{"$type":"MixItUp.Base.Model.Actions.ChatActionModel, MixItUp.Base","ChatText":"$text","SendAsStreamer":true,"IsWhisper":false,"WhisperUserName":null,"ID":"6287b656-ddf5-40bf-9366-9a0413ac34a6","Name":"Chat Message","Type":1,"Enabled":true}]}
+{
+  "$type": "MixItUp.Base.Model.Commands.WebhookCommandModel, MixItUp.Base",
+  "JSONParameters": [
+    {
+      "$type": "MixItUp.Base.Model.Commands.WebhookJSONParameter, MixItUp.Base",
+      "JSONParameterName": "text",
+      "SpecialIdentifierName": "text"
+    }
+  ],
+  "Name": "chatipelago",
+  "Type": 10,
+  "IsEnabled": true,
+  "Unlocked": false,
+  "IsEmbedded": false,
+  "GroupName": null,
+  "Triggers": [],
+  "Requirements": {
+    "$type": "MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base",
+    "Requirements": []
+  },
+  "Actions": [
+    {
+      "$type": "MixItUp.Base.Model.Actions.ChatActionModel, MixItUp.Base",
+      "ChatText": "$text",
+      "SendAsStreamer": false,
+      "IsWhisper": false,
+      "WhisperUserName": null,
+      "Name": "Chat Message",
+      "Type": 1,
+      "Enabled": true
+    }
+  ]
+}
