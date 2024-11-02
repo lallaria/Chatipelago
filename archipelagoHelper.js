@@ -1,5 +1,5 @@
 
-var gameName = "Clique";
+var gameName = "Chatipelago";
 
 var archipelago = require("archipelago.js");
 var config = require("./config.js");
@@ -41,19 +41,39 @@ client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet, messa
 
 // Only need to have locations and ids that will be used for requirements and goals
 class LOCATIONS {
-    static BIG_RED_BUTTON = 69696969;
+    static TREE1 = 600;
+    static TREE2 = 601;
+    static TREE3 = 602;
+    static TREE4 = 603;
+    static TREE5 = 604;
+    static TREE6 = 605;
+    static TREE7 = 606;
+    static TREE8 = 607;
+    static TREE9 = 608;
+    static TREE10 = 609;
     // static ITEM_ON_DESK = 69696968;
 }
 
 class ITEMS {
     // static FEELING_OF_SATISFACTION = 69696969;
-    static BUTTON_ACTIONVATION = 69696968;
+    static MAGPIE1 = 10535;
+    static MAGPIE2 = 10536;
+    static MAGPIE3 = 10537
     // static A_COOL_FILLER_ITEM = 69696967;
 }
 
 module.exports = {
     REQUIREMENTS: {
-        [LOCATIONS.BIG_RED_BUTTON]: [ITEMS.BUTTON_ACTIONVATION],
+        [LOCATIONS.TREE1]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE2]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE3]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE4]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE5]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE6]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE7]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE8]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE9]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE10]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
     },
 
     GOALS: [LOCATIONS.BIG_RED_BUTTON],
