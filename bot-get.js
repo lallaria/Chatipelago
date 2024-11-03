@@ -59,7 +59,7 @@ function onEvent(message) {
 
 function onItem(id, name, player) {
     if (!goal) {
-        webhook.postInChat(`Look! ${player} found ${name}`);
+        webhook.postInChat(`${player} found this ${name}`);
     }
 }
 
@@ -73,13 +73,17 @@ function isInCooldown() {
 }
 
 function notifyCooldown() {
-    webhook.postInChat('I\'m back! Use !search to look for something shiny.')
+    webhook.postInChat('I\'m back! Use \'!search\' to look for something shiny.')
 }
 
 function attemptLoot() {
     if (isInCooldown()) return;
     if (!currentLocation) {
-        webhook.postInChat("Ok, I'll open this cache of air. Nothing here, maybe you should use !search.");
+        if (Math.random() < 0.2 && Math.random() < 0.2) {
+            webhook.postInChat("Blame @LMarioza, @Dranzior, and @DelilahIsDidi for this cooldown");
+        } else {
+            webhook.postInChat("Ok, I'll open this cache of air. Nothing here, maybe you should use \'!search.\'");
+        }
         return;
     }
     lootAttemps++;
@@ -92,7 +96,7 @@ function attemptLoot() {
             searchAttempts = 0;
             archipelagoHelper.claimCheck(triggeredLocation);
             itemName = archipelagoHelper.getItemNameByLocation(triggeredLocation)
-            webhook.postInChat(`Whoa, check out this ${itemName}. I gotta run to gossip girl, brb.`);
+            webhook.postInChat(`Whoa, you found ${itemName}. I gotta run to gossip girl, brb.`);
             if (archipelagoHelper.checkGoal(triggeredLocation)) {
                 archipelagoHelper.goal();
                 webhook.postInChat('Did...did we find everything already?!');
@@ -103,7 +107,7 @@ function attemptLoot() {
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`Ah shit I dropped the item in ${archipelagoHelper.getLocationName(currentLocation)}. Use !loot to find it again or !search to abandon this check until RNG brings us back.`);
+            webhook.postInChat(`Ah shit I dropped the item in ${archipelagoHelper.getLocationName(currentLocation)}. Use \'!loot\' to find it again or \'!search\' to abandon this check until RNG brings us back.`);
         }
     }
 }
@@ -118,7 +122,7 @@ function attemptSearch() {
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`Check out this ${archipelagoHelper.getLocationName(currentLocation)}. Use !loot to open it or !search if you think it looks funny.`);
+            webhook.postInChat(`${archipelagoHelper.getLocationName(currentLocation)} looks interesting. Use \'!loot\' to open it or \'!search\' if you think it looks funny.`);
         }
     }
 }

@@ -22,17 +22,17 @@ client.connect(connectionInfo)
     .catch((error) => { console.error("Failed to connect:", error); });
 
 var onItemRecieved;
-const notifiedItems =[]
+const notifiedItems = []
 const locationItem = {};
-client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({locations}) => {
-    locations?.forEach(({item, player, location}) => locationItem[location] = {player, item});
+client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({ locations }) => {
+    locations?.forEach(({ item, player, location }) => locationItem[location] = { player, item });
     console.log('items mapped to locations', locationItem)
 });
 client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet, message) => {
     var items = packet["items"];
     for (i = 0; i < items.length; ++i) {
         const itemId = items[i]["item"];
-        if(notifiedItems.includes(itemId)) continue;
+        if (notifiedItems.includes(itemId)) continue;
         notifiedItems.push(itemId);
         console.log("Item received", i, items[i]);
         onItemRecieved(itemId, client.items.name(gameName, itemId), client.players.name(items[i]["player"]));
@@ -80,21 +80,21 @@ module.exports = {
 
     checkGoal: function (lastLocation) {
         // include lastLocation because client.locations.checked may not be updated yer
-        const checked = [...client.locations.checked,lastLocation];
+        const checked = [...client.locations.checked, lastLocation];
         console.log(checked, this.GOALS);
         return this.GOALS.every((goal) => checked.includes(goal));
     },
 
     maybeTriggerItemLocationMap: function () {
-        if(Object.entries(locationItem).length> 0) return
+        if (Object.entries(locationItem).length > 0) return
         // scout all locations to map items locations
         client.locations.scout(0, ...client.locations.checked, ...client.locations.missing);
     },
 
     getItemNameByLocation: function (location) {
-        const {player, item} = locationItem[location] ?? {};
-        if(!player || !item) return;
-        return `${client.items.name(player,item)} for ${client.players.name(player)}`;
+        const { player, item } = locationItem[location] ?? {};
+        if (!player || !item) return;
+        return `${client.items.name(player, item)} for ${client.players.name(player)}`;
     },
 
     getCheckableLocation: function () {
@@ -103,7 +103,7 @@ module.exports = {
             return requirements.every((requirement) => this.isItemObtained(requirement));
         });
 
-        if(validLocations.length === 0) return;
+        if (validLocations.length === 0) return;
 
         return validLocations[Math.floor(Math.random() * validLocations.length)];
     },
