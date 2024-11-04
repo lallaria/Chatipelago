@@ -39,6 +39,7 @@ var server = require('./server.js');
 var webhook = require('./webhook-put.js');
 var archipelagoHelper = require('./archipelagoHelper.js');
 var config = require('./config.js');
+var messageUtil = require('./messageUtil.js');
 
 server.setOnEvent(onEvent);
 archipelagoHelper.setOnItemRecieved(onItem);
@@ -59,7 +60,7 @@ function onEvent(message) {
 
 function onItem(id, name, player) {
     if (!goal) {
-        webhook.postInChat(`${player} found this ${name}`);
+        webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: name, player: player }));
     }
 }
 
@@ -73,7 +74,7 @@ function isInCooldown() {
 }
 
 function notifyCooldown() {
-    webhook.postInChat('I\'m back! Use \'!search\' to look for something shiny.')
+    webhook.postInChat(messageUtil.generateRandomText(messageUtil.OFF_COOLDOWN))
 }
 
 function attemptLoot() {
@@ -96,7 +97,7 @@ function attemptLoot() {
             searchAttempts = 0;
             archipelagoHelper.claimCheck(triggeredLocation);
             itemName = archipelagoHelper.getItemNameByLocation(triggeredLocation)
-            webhook.postInChat(`Whoa, you found ${itemName}. I gotta run to gossip girl, brb.`);
+            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_FOUND, { item: itemName }));
             if (archipelagoHelper.checkGoal(triggeredLocation)) {
                 archipelagoHelper.goal();
                 webhook.postInChat('Did...did we find everything already?!');
@@ -107,7 +108,7 @@ function attemptLoot() {
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`Ah shit I dropped the item in ${archipelagoHelper.getLocationName(currentLocation)}. Use \'!loot\' to find it again or \'!search\' to abandon this check until RNG brings us back.`);
+            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_MISSED, { location: archipelagoHelper.getLocationName(currentLocation) }));
         }
     }
 }
@@ -122,7 +123,7 @@ function attemptSearch() {
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            webhook.postInChat(`${archipelagoHelper.getLocationName(currentLocation)} looks interesting. Use \'!loot\' to open it or \'!search\' if you think it looks funny.`);
+            webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, {location: archipelagoHelper.getLocationName(currentLocation)}));
         }
     }
 }
