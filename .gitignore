@@ -128,5 +128,12 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+
 /.vs
 /.vscode
+/bin/
+/obj/
+/nuget.config
+/.gitattributes
+/bin/Microsoft.NodejsTools.WebRole.dll
