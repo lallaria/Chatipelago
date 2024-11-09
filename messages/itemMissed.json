@@ -1,3 +1,24 @@
 [
-	"Ah shit I dropped the item in {location}. Use '!loot' to find it again or '!search' to abandon this check until RNG brings us back."
+  "Ah shit I dropped the item in {location}. Use '!loot' to find it again or '!search' to abandon this check until RNG brings us back.",
+  "I haven't found anything yet in {location}. bbirbEmpty Use '!loot' to keep looking or '!search' to abandon this location until RNG brings us back.",
+  "I thought it was right here bbirbCheck. Use '!loot' to keep looking in {location} or '!search' to wander elsewhere.",
+  "!waaa waaa Chat lost the item in {location}. Use '!loot' to try to find it again or '!search' to head somewhere new.",
+  "Ah shit I dropped the item in {location}. Use '!loot' to find it again or '!search' to abandon this check until RNG brings us back.",
+  "I haven't found anything yet in {location}. bbirbEmpty Use '!loot' to keep looking or '!search' to abandon this location until RNG brings us back.",
+  "I thought it was right here bbirbCheck. Use '!loot' to keep looking in {location} or '!search' to wander elsewhere.",
+  "!waaa waaa Chat lost the item in {location}. Use '!loot' to try to find it again or '!search' to head somewhere new.",
+  "Ah shit I dropped the item in {location}. Use '!loot' to find it again or '!search' to abandon this check until RNG brings us back.",
+  "I haven't found anything yet in {location}. bbirbEmpty Use '!loot' to keep looking or '!search' to abandon this location until RNG brings us back.",
+  "I thought it was right here bbirbCheck. Use '!loot' to keep looking in {location} or '!search' to wander elsewhere.",
+  "!waaa waaa Chat lost the item in {location}. Use '!loot' to try to find it again or '!search' to head somewhere new.",
+  "Ah shit I dropped the item in {location}. Use '!loot' to find it again or '!search' to abandon this check until RNG brings us back.",
+  "I haven't found anything yet in {location}. bbirbEmpty Use '!loot' to keep looking or '!search' to abandon this location until RNG brings us back.",
+  "I thought it was right here bbirbCheck. Use '!loot' to keep looking in {location} or '!search' to wander elsewhere.",
+  "!waaa waaa Chat lost the item in {location}. Use '!loot' to try to find it again or '!search' to head somewhere new.",
+  "Ah shit I dropped the item in {location}. Use '!loot' to find it again or '!search' to abandon this check until RNG brings us back.",
+  "I haven't found anything yet in {location}. bbirbEmpty Use '!loot' to keep looking or '!search' to abandon this location until RNG brings us back.",
+  "I thought it was right here bbirbCheck. Use '!loot' to keep looking in {location} or '!search' to wander elsewhere.",
+  "!waaa waaa Chat lost the item in {location}. Use '!loot' to try to find it again or '!search' to head somewhere new.",
+  "You can blame @lmarioza for my klutzy nature. '!loot' will try again in {location} or '!search' will get me out of here.",
+  "I tripped on @Dranzior. You know it's his fault I can say more than 3 things'. Whatever, I'm still in {location}, you can use '!loot' to see if I can pick up the thing this time or '!search' to get outta here."
 ]

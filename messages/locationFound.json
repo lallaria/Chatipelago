@@ -1,3 +1,6 @@
 [
-	"{location} looks interesting. Use '!loot' to open it or '!search' if you think it looks funny."
+	"{location} looks interesting. Use '!loot' to open it or '!search' if you think it looks funny.",
+	"Chat trips and winds up in {location}. Since we're here now, '!loot' to look around or '!search' if you'd like to stand up and go somewhere else.",
+	"bbirbScatter Chat scatters to {location}. Use '!loot' to investigate or '!search' to scatter somewhere new.",
+	"Chat gets to {location} after a long day at work and what do they find? Gotta use '!loot' to find out or '!search' to go somewhere else after a long, hard day."
 ]
