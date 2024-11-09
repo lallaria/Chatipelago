@@ -48,12 +48,14 @@ archipelagoHelper.setOnCountdown(onCountdown);
 archipelagoHelper.setOnDeathLink(onDeathLink);
 
 function onEvent(message) {
+    message = message.replace('/', "");
+    message = message.replaceAll('+', " ");
     capture_death = message.match(/@[\w]*\s.*mauled.*/);
-    if (capture_death != null) { deathLink(capture_death) }
-    command_match = message.match(/![a-z]*/);
+    if (capture_death != null) { deathLink(capture_death[0]); }
+    command_match = message.match(/^![a-z]*/);
     if (command_match != null) {
         archipelagoHelper.maybeTriggerItemLocationMap();
-        switch (command_match) {
+        switch (command_match[0]) {
             case '!search':
                 attemptSearch();
                 break;
@@ -67,15 +69,15 @@ function onEvent(message) {
 }
 function onItem(id, item, player, flags) {
     if (!goal) {
-        if (flags == 4) {
+        if (flags === 4) {
             if (Math.random() < .4) { currently_dead = true; }
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
         }
-        else if (flags == 1) {
-            webhook.postInChat("{player} found us {item}, it's really important.", { item: item, player: player }, false, false);
+        else if (flags === 1) {
+            webhook.postInChat(`${player} found us ${item}, it's really important.`, false, false);
         }
         else {
-            if (item.match(/![a-z]*/) != null) { webhook.postInChat("{item} - from {player}", { item: item, player: player }, false, false); }
+            if (item.match(/![a-z]*/) != null) { webhook.postInChat(`${item} - from ${player}`, false, false); }
             else { webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: item, player: player }), false, false); }
         }
     }
@@ -85,7 +87,7 @@ function onDeathLink(player, cause) {
     webhook.postInChat(messageUtil.generateRandomText(messageUtil.BOUNCED, { player: player }), false, true);
 }
 function onCountdown(value) {
-    webhook.postInChat(value, false, false);
+    webhook.postInChat(value.replace("[Server]: ", ""), false, false);
 }
 
 let currentLocation;
@@ -102,6 +104,7 @@ function notifyCooldown() {
 }
 
 function deathLink(reason) {
+    webhook.postInChat(`Watch out everyone, ${reason}! This could be bad...`, false, false);
     if (currently_dead) {
         currently_dead = false;
         return archipelagoHelper.giveDeathLink(reason);
