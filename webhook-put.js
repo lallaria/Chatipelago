@@ -7,15 +7,16 @@ https://wiki.mixitupapp.com/en/commands/webhook-commands
 var config = require("./config.js");
 
 module.exports = {
-    postInChat: function (message) {
+    postInChat: function (message, trap, bounced) {
         console.log(`Posting "${message}" in chat`);
-        post(message, config.webhookUrl);
+        post(message, config.webhookUrl, trap, bounced);
     }
 }
 
-function post(message, url) {
-
-    var content = { text: message };
+function post(message, url, trap, bounced) {
+    if (!trap && !bounced) { var content = { text: message, trap: false, bounced: false }; }
+    else if (trap && !bounced) { var content = { text: message, trap: true, bounced: false }; }
+    else if (!trap && bounced) { var content = { text: message, trap: false, bounced: true }; }
 
     response = fetch(url, {
         method: "POST",

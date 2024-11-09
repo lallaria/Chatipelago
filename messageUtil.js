@@ -33,5 +33,7 @@ module.exports = {
     LOCATION_FOUND: loadJson('messages/locationFound.json'),
     ITEM_MISSED: loadJson('messages/itemMissed.json'),
     ITEM_FOUND: loadJson('messages/itemFound.json'),
-    ITEM_RECIEVED: loadJson('messages/itemRecieved.json')
+    ITEM_RECIEVED: loadJson('messages/itemRecieved.json'),
+    BOUNCED: loadJson('messages/bounced.json'), //deathlink
+    ITEM_TRAP: loadJson('messages/itemTrap.json')
 }
