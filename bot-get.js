@@ -34,6 +34,7 @@ We can guarantee a 100% chance.
 */
 
 var goal = false;
+var currently_dead = false;
 
 var server = require('./server.js');
 var webhook = require('./webhook-put.js');
@@ -43,6 +44,8 @@ var messageUtil = require('./messageUtil.js');
 
 server.setOnEvent(onEvent);
 archipelagoHelper.setOnItemRecieved(onItem);
+archipelagoHelper.setOnCountdown(onCountdown);
+archipelagoHelper.setOnDeathLink(onDeathLink);
 
 function onEvent(message) {
     archipelagoHelper.maybeTriggerItemLocationMap();
@@ -53,15 +56,31 @@ function onEvent(message) {
         case '/!loot':
             attemptLoot();
             break;
+        case 'Oh no,':
+            deathLink("PARSE THIS!")
         default:
+            console.log(message);
             break;
     }
 }
-
-function onItem(id, name, player) {
+function onItem(id, name, player, flags) {
     if (!goal) {
-        webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: name, player: player }));
+        if (flags == 4) {
+            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: name, player: player }), true, false);
+            if (Math.random() < .4) {
+                deathLink();
+            }
+        }
+        else {
+            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: name, player: player }), false, false);
+        }
     }
+}
+function onDeathLink(player) {
+    webhook.postInChat(messageUtil.generateRandomText(messageUtil.BOUNCED, { player: player }), false, true);
+}
+function onCountdown(value) {
+    webhook.postInChat(value, false, false);
 }
 
 let currentLocation;
@@ -77,6 +96,14 @@ function notifyCooldown() {
     webhook.postInChat(messageUtil.generateRandomText(messageUtil.OFF_COOLDOWN))
 }
 
+function deathLink(reason) {
+    if (currently_dead) {
+        currently_dead = false;
+        return archipelagoHelper.giveDeathLink(reason);
+    }
+    return
+}
+
 function attemptLoot() {
     if (isInCooldown()) return;
     if (!currentLocation) {
@@ -88,8 +115,9 @@ function attemptLoot() {
         return;
     }
     lootAttemps++;
+    lostit = false;
     if (lootAttemps >= config.gameSettings.lootAttemptsRequired) {
-        if (Math.random() < config.gameSettings.lootChance) {
+        if (Math.random() < config.gameSettings.lootChance || lostit) {
             const triggeredLocation = currentLocation;
             currentLocation = undefined;
             lastCheckTime = new Date();
@@ -108,6 +136,7 @@ function attemptLoot() {
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
+            lostit = true;
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_MISSED, { location: archipelagoHelper.getLocationName(currentLocation) }));
         }
     }

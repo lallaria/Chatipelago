@@ -9,6 +9,7 @@ const connectionInfo = {
     port: config.connectionInfo.port,
     game: gameName,
     name: config.connectionInfo.playerName,
+    tags: config.connectionInfo.tags,
     items_handling: archipelago.ITEMS_HANDLING_FLAGS.REMOTE_ALL
 }
 
@@ -17,25 +18,39 @@ const client = new archipelago.Client();
 client.connect(connectionInfo)
     .then(() => {
         console.log("connected");
-        client.updateStatus(archipelago.CLIENT_STATUS.PLAYING);
+        client.updateStatus(archipelago.CLIENT_STATUS.CONNECTED);
     })
     .catch((error) => { console.error("Failed to connect:", error); });
 
 var onItemRecieved;
+var onDeathLink;
+var onCountdown;
 const notifiedItems = []
 const locationItem = {};
 client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({ locations }) => {
     locations?.forEach(({ item, player, location }) => locationItem[location] = { player, item });
     console.log('items mapped to locations', locationItem)
 });
-client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet, message) => {
+client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet) => {
     var items = packet["items"];
     for (i = 0; i < items.length; ++i) {
         const itemId = items[i]["item"];
+        const itemflags = items[i]["flags"];
         if (notifiedItems.includes(itemId)) continue;
         notifiedItems.push(itemId);
         console.log("Item received", i, items[i]);
-        onItemRecieved(itemId, client.items.name(gameName, itemId), client.players.name(items[i]["player"]));
+        onItemRecieved(itemId, client.items.name(gameName, itemId), client.players.name(items[i]["player"]), itemflags);
+    }
+});
+client.addListener(archipelago.SERVER_PACKET_TYPE.BOUNCED, (packet) => {
+    if (packet["tags"] == ["DeathLink"]) { return onDeathLink("Someone fucked up"); }
+    //console.log("BOING", JSON.stringify(packet["data"]));
+});
+client.addListener(archipelago.SERVER_PACKET_TYPE.PRINT_JSON, (packet, message) => {
+    if (packet.type === archipelago.PRINT_JSON_TYPE.COUNTDOWN) {
+        var countdown = message;
+        console.log(countdown);
+        onCountdown(countdown);
     }
 });
 
@@ -76,7 +91,8 @@ module.exports = {
         [LOCATIONS.TREE10]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
     },
 
-    GOALS: [LOCATIONS.BIG_RED_BUTTON],
+    GOALS: [LOCATIONS.TREE1, LOCATIONS.TREE2, LOCATIONS.TREE3, LOCATIONS.TREE4, LOCATIONS.TREE5,
+            LOCATIONS.TREE6, LOCATIONS.TREE7, LOCATIONS.TREE8, LOCATIONS.TREE9, LOCATIONS.TREE10],
 
     checkGoal: function (lastLocation) {
         // include lastLocation because client.locations.checked may not be updated yer
@@ -119,9 +135,28 @@ module.exports = {
     setOnItemRecieved: function (fct) {
         onItemRecieved = fct;
     },
+    setOnDeathLink: function (player) {
+        onDeathLink = player;
+    },
 
+    setOnCountdown: function (value) {
+        onCountdown = value;
+    },
     getLocationName: function (location) {
         return client.locations.name(gameName, location)
+    },
+
+    giveDeathLink: function (reason) {
+        return client.send(
+            {
+                cmd: archipelago.CLIENT_PACKET_TYPE.BOUNCE,
+                tags: ["DeathLink"],
+                data: {
+                    time: Date.now,
+                    source: client.player.name,
+                    cause: reason
+                }
+            })
     },
 
     goal: function () {

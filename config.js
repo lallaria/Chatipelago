@@ -1,11 +1,12 @@
 module.exports = {
 	connectionInfo: 
 	{
-		hostname: "archipelago.gg",
-		port: 0,
-		playerName: "",
+		hostname: "localhost",
+		port: 38281,
+		playerName: "Chat",
+		tags: ['AP','DeathLink'],
 	},
-	webhookUrl: "",
+	webhookUrl: "https://api.mixitupapp.com/api/webhook/5c364489-fdbd-4b94-b3e5-08dc9d316ad3?secret=7601FDFB6F750EDD49D6032B75D5C7DB6EAC0EA94E71BE2E3E6D1FBF4C7A21E4",
 	gameSettings: 
 	{
 		searchAttemptsRequired: 5,
