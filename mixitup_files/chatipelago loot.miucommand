@@ -56,6 +56,36 @@
       "Name": "Web Request",
       "Type": 11,
       "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base",
+      "CaseSensitive": false,
+      "Operator": 0,
+      "RepeatWhileTrue": false,
+      "Clauses": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+          "ComparisionType": 13,
+          "Value1": "@$username",
+          "Value2": "$gamequeueusers100",
+          "Value3": ""
+        }
+      ],
+      "CommandID": "00000000-0000-0000-0000-000000000000",
+      "Actions": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.GameQueueActionModel, MixItUp.Base",
+          "ActionType": 0,
+          "RoleRequirement": null,
+          "TargetUsername": "$username",
+          "Name": "Game Queue",
+          "Type": 9,
+          "Enabled": true
+        }
+      ],
+      "Name": "Conditional",
+      "Type": 17,
+      "Enabled": true
     }
   ]
 }

@@ -43,8 +43,13 @@ client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet) => {
     }
 });
 client.addListener(archipelago.SERVER_PACKET_TYPE.BOUNCED, (packet) => {
-    if (packet["tags"] == ["DeathLink"]) { return onDeathLink("Someone fucked up"); }
-    //console.log("BOING", JSON.stringify(packet["data"]));
+    if (typeof packet["tags"] === "undefined") { return; }
+    if (packet["tags"].some(str => str.includes('DeathLink'))) {
+        const data = packet["data"];
+        console.log("DeathLink:", data["cause"], data["source"]);
+        return onDeathLink(data["source"],data["cause"]);
+    }
+    return;
 });
 client.addListener(archipelago.SERVER_PACKET_TYPE.PRINT_JSON, (packet, message) => {
     if (packet.type === archipelago.PRINT_JSON_TYPE.COUNTDOWN) {
@@ -135,12 +140,12 @@ module.exports = {
     setOnItemRecieved: function (fct) {
         onItemRecieved = fct;
     },
-    setOnDeathLink: function (player) {
-        onDeathLink = player;
+    setOnDeathLink: function (func) {
+        onDeathLink = func;
     },
 
-    setOnCountdown: function (value) {
-        onCountdown = value;
+    setOnCountdown: function (func) {
+        onCountdown = func;
     },
     getLocationName: function (location) {
         return client.locations.name(gameName, location)

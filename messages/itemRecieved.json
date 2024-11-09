@@ -1,3 +1,9 @@
 [
-	"{player} found this {item}"
+  "{player} found {item}",
+  "{player} uncovered {item}",
+  "{player} stumbled upon {item}",
+  "{player} dug up {item}",
+  "{player} presented {item}",
+  "{player} unveiled {item}",
+  "{player} holds up {item}"
 ]

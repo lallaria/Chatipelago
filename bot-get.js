@@ -48,35 +48,40 @@ archipelagoHelper.setOnCountdown(onCountdown);
 archipelagoHelper.setOnDeathLink(onDeathLink);
 
 function onEvent(message) {
-    archipelagoHelper.maybeTriggerItemLocationMap();
-    switch (message) {
-        case '/!search':
-            attemptSearch();
-            break;
-        case '/!loot':
-            attemptLoot();
-            break;
-        case 'Oh no,':
-            deathLink("PARSE THIS!")
-        default:
-            console.log(message);
-            break;
+    capture_death = message.match(/@[\w]*\s.*mauled.*/);
+    if (capture_death != null) { deathLink(capture_death) }
+    command_match = message.match(/![a-z]*/);
+    if (command_match != null) {
+        archipelagoHelper.maybeTriggerItemLocationMap();
+        switch (command_match) {
+            case '!search':
+                attemptSearch();
+                break;
+            case '!loot':
+                attemptLoot();
+                break;
+            default:
+                break;
+        }
     }
 }
-function onItem(id, name, player, flags) {
+function onItem(id, item, player, flags) {
     if (!goal) {
         if (flags == 4) {
-            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: name, player: player }), true, false);
-            if (Math.random() < .4) {
-                deathLink();
-            }
+            if (Math.random() < .4) { currently_dead = true; }
+            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
+        }
+        else if (flags == 1) {
+            webhook.postInChat("{player} found us {item}, it's really important.", { item: item, player: player }, false, false);
         }
         else {
-            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: name, player: player }), false, false);
+            if (item.match(/![a-z]*/) != null) { webhook.postInChat("{item} - from {player}", { item: item, player: player }, false, false); }
+            else { webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: item, player: player }), false, false); }
         }
     }
 }
-function onDeathLink(player) {
+function onDeathLink(player, cause) {
+    if (cause.length > 0) { webhook.postInChat(cause, false, false); }
     webhook.postInChat(messageUtil.generateRandomText(messageUtil.BOUNCED, { player: player }), false, true);
 }
 function onCountdown(value) {
@@ -145,7 +150,7 @@ function attemptLoot() {
 function attemptSearch() {
     if (isInCooldown()) return;
     searchAttempts++
-    if (searchAttempts >= config.gameSettings.searchAttemptsRequired) {
+    if (searchAttempts >= config.gameSettings.searchAttemptsRequired && Math.random() < config.gameSettings.lootChance) {
         currentLocation = archipelagoHelper.getCheckableLocation();
         if (!currentLocation) {
             webhook.postInChat("No available locations");
