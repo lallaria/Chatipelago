@@ -12,9 +12,13 @@ function postInChat(message, trap, bounced) {
 }
 
 function post(message, url, trap, bounced) {
-    if (!trap && !bounced) { var content = { text: message, trap: false, bounced: false }; }
-    else if (trap && !bounced) { var content = { text: message, trap: true, bounced: false }; }
-    else if (!trap && bounced) { var content = { text: message, trap: false, bounced: true }; }
+    if (!trap && !bounced) {
+        var content = {text: message, trap: false, bounced: false};
+    } else if (trap && !bounced) {
+        var content = {text: message, trap: true, bounced: false};
+    } else if (!trap && bounced) {
+        var content = {text: message, trap: false, bounced: true};
+    }
 
     response = fetch(url, {
         method: "POST",

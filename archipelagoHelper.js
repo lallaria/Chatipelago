@@ -24,7 +24,7 @@ const connectionInfo = {
     game: gameName,
     name: config.connectionInfo.playerName,
     tags: config.connectionInfo.tags,
-    items_handling: archipelago.ITEMS_HANDLING_FLAGS.REMOTE_ALL
+    items_handling: archipelago.itemsHandlingFlags.all
 }
 
 const client = new archipelago.Client();
@@ -32,17 +32,19 @@ const client = new archipelago.Client();
 client.connect(connectionInfo)
     .then(() => {
         console.log("connected");
-        client.updateStatus(archipelago.CLIENT_STATUS.CONNECTED);
+        client.updateStatus(archipelago.clientStatuses.connected);
     })
-    .catch((error) => { console.error("Failed to connect:", error); });
+    .catch((error) => {
+        console.error("Failed to connect:", error);
+    });
 
 var onItemRecieved;
 var onDeathLink;
 var onCountdown;
 const notifiedItems = []
 const locationItem = {};
-client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({ locations }) => {
-    locations?.forEach(({ item, player, location }) => locationItem[location] = { player, item });
+client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({locations}) => {
+    locations?.forEach(({item, player, location}) => locationItem[location] = {player, item});
     console.log('items mapped to locations', locationItem)
 });
 client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet) => {
@@ -57,11 +59,13 @@ client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet) => {
     }
 });
 client.addListener(archipelago.SERVER_PACKET_TYPE.BOUNCED, (packet) => {
-    if (typeof packet["tags"] === "undefined") { return; }
+    if (typeof packet["tags"] === "undefined") {
+        return;
+    }
     if (packet["tags"].some(str => str.includes('DeathLink'))) {
         const data = packet["data"];
         console.log("DeathLink:", data["cause"], data["source"]);
-        return onDeathLink(data["source"],data["cause"]);
+        return onDeathLink(data["source"], data["cause"]);
     }
     return;
 });
@@ -138,8 +142,8 @@ function checkGoal(lastLocation) {
 }
 
 function maybeTriggerItemLocationMap() {
-    if(Object.entries(locationItem).length > 0)
-    return
+    if (Object.entries(locationItem).length > 0)
+        return
     // scout all locations to map items locations
     client.locations.scout(0, ...client.locations.checked, ...client.locations.missing);
 }
