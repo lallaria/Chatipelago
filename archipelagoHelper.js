@@ -1,8 +1,22 @@
+import * as archipelago from 'archipelago.js'
+import * as config from './config.js';
+
+export {
+    checkGoal,
+    maybeTriggerItemLocationMap,
+    getItemNameByLocation,
+    getCheckableLocation,
+    isItemObtained,
+    claimCheck,
+    setOnItemRecieved,
+    setOnDeathLink,
+    setOnCountdown,
+    getLocationName,
+    giveDeathLink,
+    goal
+}
 
 var gameName = "Chatipelago";
-
-var archipelago = require("archipelago.js");
-var config = require("./config.js");
 
 const connectionInfo = {
     hostname: config.connectionInfo.hostname,
@@ -71,100 +85,119 @@ class LOCATIONS {
     static TREE8 = 607;
     static TREE9 = 608;
     static TREE10 = 609;
-    // static ITEM_ON_DESK = 69696968;
 }
 
 class ITEMS {
-    // static FEELING_OF_SATISFACTION = 69696969;
     static MAGPIE1 = 11490;
     static MAGPIE2 = 11491;
     static MAGPIE3 = 11492;
-    // static A_COOL_FILLER_ITEM = 69696967;
 }
 
-module.exports = {
-    REQUIREMENTS: {
-        [LOCATIONS.TREE1]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-        [LOCATIONS.TREE2]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-        [LOCATIONS.TREE3]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-        [LOCATIONS.TREE4]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-        [LOCATIONS.TREE5]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-        [LOCATIONS.TREE6]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-        [LOCATIONS.TREE7]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-        [LOCATIONS.TREE8]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-        [LOCATIONS.TREE9]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-        [LOCATIONS.TREE10]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    },
+//module.exports = {
+/*REQUIREMENTS: {
+    [LOCATIONS.TREE1]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE2]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE3]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE4]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE5]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE6]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE7]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE8]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE9]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+        [LOCATIONS.TREE10]
+:
+    [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
+}
 
-    GOALS: [LOCATIONS.TREE1, LOCATIONS.TREE2, LOCATIONS.TREE3, LOCATIONS.TREE4, LOCATIONS.TREE5,
-            LOCATIONS.TREE6, LOCATIONS.TREE7, LOCATIONS.TREE8, LOCATIONS.TREE9, LOCATIONS.TREE10],
+GOALS: [LOCATIONS.TREE1, LOCATIONS.TREE2, LOCATIONS.TREE3, LOCATIONS.TREE4, LOCATIONS.TREE5,
+    LOCATIONS.TREE6, LOCATIONS.TREE7, LOCATIONS.TREE8, LOCATIONS.TREE9, LOCATIONS.TREE10]*/
 
-    checkGoal: function (lastLocation) {
-        // include lastLocation because client.locations.checked may not be updated yer
-        const checked = [...client.locations.checked, lastLocation];
-        console.log(checked, this.GOALS);
-        return this.GOALS.every((goal) => checked.includes(goal));
-    },
+function checkGoal(lastLocation) {
+    // include lastLocation because client.locations.checked may not be updated yer
+    const checked = [...client.locations.checked, lastLocation];
+    console.log(checked, this.GOALS);
+    return this.GOALS.every((goal) => checked.includes(goal));
+}
 
-    maybeTriggerItemLocationMap: function () {
-        if (Object.entries(locationItem).length > 0) return
-        // scout all locations to map items locations
-        client.locations.scout(0, ...client.locations.checked, ...client.locations.missing);
-    },
+function maybeTriggerItemLocationMap() {
+    if(Object.entries(locationItem).length > 0)
+    return
+    // scout all locations to map items locations
+    client.locations.scout(0, ...client.locations.checked, ...client.locations.missing);
+}
 
-    getItemNameByLocation: function (location) {
-        const { player, item } = locationItem[location] ?? {};
-        if (!player || !item) return;
-        return `${client.items.name(player, item)} for ${client.players.name(player)}`;
-    },
+function getItemNameByLocation(location) {
+    const {player, item} = locationItem[location] ?? {};
+    if (!player || !item) return;
+    return `${client.items.name(player, item)} for ${client.players.name(player)}`;
+}
 
-    getCheckableLocation: function () {
-        const validLocations = client.locations.missing.filter((location) => {
-            const requirements = this.REQUIREMENTS[location] ?? [];
-            return requirements.every((requirement) => this.isItemObtained(requirement));
-        });
+function getCheckableLocation() {
+    const validLocations = client.locations.missing.filter((location) => {
+        const requirements = this.REQUIREMENTS[location] ?? [];
+        return requirements.every((requirement) => this.isItemObtained(requirement));
+    });
 
-        if (validLocations.length === 0) return;
+    if (validLocations.length === 0) return;
 
-        return validLocations[Math.floor(Math.random() * validLocations.length)];
-    },
+    return validLocations[Math.floor(Math.random() * validLocations.length)];
+}
 
-    isItemObtained: function (itemId) {
-        return client.items.received.some(item => item.item === itemId);
-    },
+function isItemObtained(itemId) {
+    return client.items.received.some(item => item.item === itemId);
+}
 
-    claimCheck: function (locationId) {
-        client.locations.check(locationId);
-    },
+function claimCheck(locationId) {
+    client.locations.check(locationId);
+}
 
-    setOnItemRecieved: function (fct) {
-        onItemRecieved = fct;
-    },
-    setOnDeathLink: function (func) {
-        onDeathLink = func;
-    },
+function setOnItemRecieved(fct) {
+    onItemRecieved = fct;
+}
 
-    setOnCountdown: function (func) {
-        onCountdown = func;
-    },
-    getLocationName: function (location) {
-        return client.locations.name(gameName, location)
-    },
+function setOnDeathLink(func) {
+    onDeathLink = func;
+}
 
-    giveDeathLink: function (reason) {
-        return client.send(
-            {
-                cmd: archipelago.CLIENT_PACKET_TYPE.BOUNCE,
-                tags: ["DeathLink"],
-                data: {
-                    time: Date.now,
-                    source: client.player.name,
-                    cause: reason
-                }
-            })
-    },
+function setOnCountdown(func) {
+    onCountdown = func;
+}
 
-    goal: function () {
-        client.updateStatus(archipelago.CLIENT_STATUS.GOAL);
-    }
+function getLocationName(location) {
+    return client.locations.name(gameName, location)
+}
+
+function giveDeathLink(reason) {
+    return client.send(
+        {
+            cmd: archipelago.CLIENT_PACKET_TYPE.BOUNCE,
+            tags: ["DeathLink"],
+            data: {
+                time: Date.now,
+                source: client.player.name,
+                cause: reason
+            }
+        })
+}
+
+function goal() {
+    client.updateStatus(archipelago.CLIENT_STATUS.GOAL);
 }

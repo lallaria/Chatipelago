@@ -4,13 +4,11 @@ https://wiki.mixitupapp.com/en/commands/webhook-commands
 
 */
 
-var config = require("./config.js");
+import * as config from './config.js';
 
-module.exports = {
-    postInChat: function (message, trap, bounced) {
-        console.log(`Posting "${message}" in chat`);
-        post(message, config.webhookUrl, trap, bounced);
-    }
+function postInChat(message, trap, bounced) {
+    console.log(`Posting "${message}" in chat`);
+    post(message, config.webhookUrl, trap, bounced);
 }
 
 function post(message, url, trap, bounced) {

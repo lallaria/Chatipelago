@@ -33,14 +33,14 @@ We can guarantee a 100% chance.
 
 */
 
+import * as server from './server.js';
+import * as webhook from './webhook-put.js';
+import * as archipelagoHelper from './archipelagoHelper.js';
+import * as config from './config.js';
+import * as messageUtil from './messageUtil.js';
+
 var goal = false;
 var currently_dead = false;
-
-var server = require('./server.js');
-var webhook = require('./webhook-put.js');
-var archipelagoHelper = require('./archipelagoHelper.js');
-var config = require('./config.js');
-var messageUtil = require('./messageUtil.js');
 
 server.setOnEvent(onEvent);
 archipelagoHelper.setOnItemRecieved(onItem);
