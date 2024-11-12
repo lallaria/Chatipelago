@@ -1,7 +1,9 @@
 import * as archipelago from 'archipelago.js'
 import * as config from './config.js';
+import * as apWorld from './apWorldSettings.js'
 
 export {
+    connect,
     checkGoal,
     maybeTriggerItemLocationMap,
     getItemNameByLocation,
@@ -16,127 +18,79 @@ export {
     goal
 }
 
-var gameName = "Chatipelago";
-
-const connectionInfo = {
-    hostname: config.connectionInfo.hostname,
-    port: config.connectionInfo.port,
-    game: gameName,
-    name: config.connectionInfo.playerName,
-    tags: config.connectionInfo.tags,
-    items_handling: archipelago.itemsHandlingFlags.all
-}
-
 const client = new archipelago.Client();
 
-client.connect(connectionInfo)
-    .then(() => {
-        console.log("connected");
-        client.updateStatus(archipelago.clientStatuses.connected);
-    })
-    .catch((error) => {
-        console.error("Failed to connect:", error);
-    });
+// shenanigans to fix Error in Archipelago.js
+import {WebSocket} from "ws";
 
-var onItemRecieved;
-var onDeathLink;
-var onCountdown;
+global.WebSocket = WebSocket;
+client.options.debugLogVersions = false;
+
+function connect() {
+    let url = 'wss://' + config.connectionInfo.hostname + ':' + config.connectionInfo.port;
+    client.login(url, config.connectionInfo.playerName, apWorld.GAME_NAME).then(record => {
+        console.log("connected");
+        client.updateTags(config.connectionInfo.tags);
+    }).catch(error => {
+        console.error("Failed to connect:", error.message);
+    });
+}
+
+let onItemReceived;
+let onDeathLink;
+let onCountdown;
 const notifiedItems = []
 const locationItem = {};
-client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({locations}) => {
-    locations?.forEach(({item, player, location}) => locationItem[location] = {player, item});
-    console.log('items mapped to locations', locationItem)
-});
-client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet) => {
-    var items = packet["items"];
-    for (i = 0; i < items.length; ++i) {
-        const itemId = items[i]["item"];
-        const itemflags = items[i]["flags"];
+
+client.items.on("itemsReceived", (items) => {
+    for (const item of items) {
+        const itemId = item.id;
+        const itemFlags = item.flags;
         if (notifiedItems.includes(itemId)) continue;
         notifiedItems.push(itemId);
-        console.log("Item received", i, items[i]);
-        onItemRecieved(itemId, client.items.name(gameName, itemId), client.players.name(items[i]["player"]), itemflags);
+        console.log("Item received", item);
+        onItemReceived(itemId, item.name, item.sender, itemFlags);
     }
-});
-client.addListener(archipelago.SERVER_PACKET_TYPE.BOUNCED, (packet) => {
-    if (typeof packet["tags"] === "undefined") {
-        return;
-    }
-    if (packet["tags"].some(str => str.includes('DeathLink'))) {
-        const data = packet["data"];
-        console.log("DeathLink:", data["cause"], data["source"]);
-        return onDeathLink(data["source"], data["cause"]);
-    }
-    return;
-});
-client.addListener(archipelago.SERVER_PACKET_TYPE.PRINT_JSON, (packet, message) => {
-    if (packet.type === archipelago.PRINT_JSON_TYPE.COUNTDOWN) {
-        var countdown = message;
-        console.log(countdown);
-        onCountdown(countdown);
-    }
-});
+})
 
-// Only need to have locations and ids that will be used for requirements and goals
-class LOCATIONS {
-    static TREE1 = 600;
-    static TREE2 = 601;
-    static TREE3 = 602;
-    static TREE4 = 603;
-    static TREE5 = 604;
-    static TREE6 = 605;
-    static TREE7 = 606;
-    static TREE8 = 607;
-    static TREE9 = 608;
-    static TREE10 = 609;
-}
+client.deathLink.on("deathReceived", (source, time, cause) => {
+    console.log("DeathLink:", cause, source);
+    return onDeathLink(source, cause);
+})
 
-class ITEMS {
-    static MAGPIE1 = 11490;
-    static MAGPIE2 = 11491;
-    static MAGPIE3 = 11492;
-}
-
-//module.exports = {
-var REQUIREMENTS = {
-    [LOCATIONS.TREE1]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    [LOCATIONS.TREE2]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    [LOCATIONS.TREE3]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    [LOCATIONS.TREE4]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    [LOCATIONS.TREE5]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    [LOCATIONS.TREE6]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    [LOCATIONS.TREE7]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    [LOCATIONS.TREE8]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    [LOCATIONS.TREE9]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-    [LOCATIONS.TREE10]: [ITEMS.MAGPIE1, ITEMS.MAGPIE2, ITEMS.MAGPIE3],
-}
-
-var GOALS = [LOCATIONS.TREE1, LOCATIONS.TREE2, LOCATIONS.TREE3, LOCATIONS.TREE4, LOCATIONS.TREE5,
-    LOCATIONS.TREE6, LOCATIONS.TREE7, LOCATIONS.TREE8, LOCATIONS.TREE9, LOCATIONS.TREE10]
+client.messages.on("countdown", (message) => {
+    console.log(message);
+    onCountdown(message);
+})
 
 function checkGoal(lastLocation) {
-    // include lastLocation because client.locations.checked may not be updated yer
-    const checked = [...client.locations.checked, lastLocation];
-    console.log(checked, this.GOALS);
-    return this.GOALS.every((goal) => checked.includes(goal));
+    // include lastLocation because client.locations.checked may not be updated yet
+    const checked = [...client.room.checkedLocations, lastLocation];
+    console.log(checked, apWorld.GOALS);
+    return apWorld.GOALS.every((goal) => checked.includes(goal));
 }
 
 function maybeTriggerItemLocationMap() {
     if (Object.entries(locationItem).length > 0)
         return
     // scout all locations to map items locations
-    client.locations.scout(0, ...client.locations.checked, ...client.locations.missing);
+    client.scout(client.room.allLocations, 0).then(items => {
+        items?.forEach(item => {
+            locationItem[item.locationId] = item;
+        });
+        console.log('items mapped to locations', locationItem)
+    });
 }
 
-function getItemNameByLocation(location) {
-    const {player, item} = locationItem[location] ?? {};
-    if (!player || !item) return;
-    return `${client.items.name(player, item)} for ${client.players.name(player)}`;
+function getItemNameByLocation(locationId) {
+    let item = locationItem[locationId] ?? {};
+    if (!item) return;
+    return `${item.name} for ${item.receiver.name}`;
 }
 
 function getCheckableLocation() {
-    const validLocations = client.locations.missing.filter((location) => {
-        const requirements = this.REQUIREMENTS[location] ?? [];
+    const validLocations = client.room.missingLocations.filter((location) => {
+        const requirements = apWorld.REQUIREMENTS[location] ?? [];
         return requirements.every((requirement) => this.isItemObtained(requirement));
     });
 
@@ -146,15 +100,15 @@ function getCheckableLocation() {
 }
 
 function isItemObtained(itemId) {
-    return client.items.received.some(item => item.item === itemId);
+    return client.items.received.some(item => item.id === itemId);
 }
 
 function claimCheck(locationId) {
-    client.locations.check(locationId);
+    client.check(locationId);
 }
 
 function setOnItemRecieved(fct) {
-    onItemRecieved = fct;
+    onItemReceived = fct;
 }
 
 function setOnDeathLink(func) {
@@ -165,23 +119,16 @@ function setOnCountdown(func) {
     onCountdown = func;
 }
 
-function getLocationName(location) {
-    return client.locations.name(gameName, location)
+function getLocationName(locationId) {
+    let item = locationItem[locationId] ?? {};
+    if (!item) return;
+    return `${item.location.name}`;
 }
 
 function giveDeathLink(reason) {
-    return client.send(
-        {
-            cmd: archipelago.CLIENT_PACKET_TYPE.BOUNCE,
-            tags: ["DeathLink"],
-            data: {
-                time: Date.now,
-                source: client.player.name,
-                cause: reason
-            }
-        })
+    client.deathLink.sendDeathLink(client.name, reason);
 }
 
 function goal() {
-    client.updateStatus(archipelago.CLIENT_STATUS.GOAL);
+    client.goal();
 }

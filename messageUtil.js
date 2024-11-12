@@ -1,5 +1,16 @@
 import * as fs from 'fs';
 
+export {
+    generateRandomText,
+    OFF_COOLDOWN,
+    LOCATION_FOUND,
+    ITEM_MISSED,
+    ITEM_FOUND,
+    ITEM_RECIEVED,
+    BOUNCED,
+    ITEM_TRAP
+}
+
 function loadJson(filename) {
     var json = JSON.parse(fs.readFileSync(filename, 'utf8'));
     var messageList = [];
@@ -28,10 +39,10 @@ function generateRandomText (textList, variables) {
     return text;
 }
 
-OFF_COOLDOWN: loadJson('messages/offCooldown.json');
-LOCATION_FOUND: loadJson('messages/locationFound.json');
-ITEM_MISSED:loadJson('messages/itemMissed.json');
-ITEM_FOUND:loadJson('messages/itemFound.json');
-ITEM_RECIEVED:loadJson('messages/itemRecieved.json');
-BOUNCED:loadJson('messages/bounced.json'); //deathlink
-ITEM_TRAP:loadJson('messages/itemTrap.json');
+let OFF_COOLDOWN = loadJson('messages/offCooldown.json');
+let LOCATION_FOUND = loadJson('messages/locationFound.json');
+let ITEM_MISSED = loadJson('messages/itemMissed.json');
+let ITEM_FOUND = loadJson('messages/itemFound.json');
+let ITEM_RECIEVED = loadJson('messages/itemRecieved.json');
+let BOUNCED = loadJson('messages/bounced.json'); //deathlink
+let ITEM_TRAP = loadJson('messages/itemTrap.json');

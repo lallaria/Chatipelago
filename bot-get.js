@@ -47,6 +47,8 @@ archipelagoHelper.setOnItemRecieved(onItem);
 archipelagoHelper.setOnCountdown(onCountdown);
 archipelagoHelper.setOnDeathLink(onDeathLink);
 
+archipelagoHelper.connect();
+
 function onEvent(message) {
     message = message.replace('/', "");
     message = message.replaceAll('+', " ");

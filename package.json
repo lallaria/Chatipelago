@@ -12,6 +12,7 @@
   },
   "eslintConfig": {},
   "dependencies": {
-    "archipelago.js": "^2.0.1"
+    "archipelago.js": "^2.0.1",
+    "ws": "^8.18.0"
   }
 }
