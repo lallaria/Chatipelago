@@ -3,6 +3,7 @@ var gameName = "Chatipelago";
 
 var archipelago = require("archipelago.js");
 var config = require("./config.js");
+var messageUtil = require('./messageUtil.js');
 
 const connectionInfo = {
     hostname: config.connectionInfo.hostname,
@@ -14,6 +15,7 @@ const connectionInfo = {
 }
 
 const client = new archipelago.Client();
+var notifiedItems = [];
 
 client.connect(connectionInfo)
     .then(() => {
@@ -21,15 +23,22 @@ client.connect(connectionInfo)
         client.updateStatus(archipelago.CLIENT_STATUS.CONNECTED);
     })
     .catch((error) => { console.error("Failed to connect:", error); });
-
 var onItemRecieved;
 var onDeathLink;
 var onCountdown;
-const notifiedItems = []
+var filename = ""
+
+client.addListener(archipelago.SERVER_PACKET_TYPE.ROOM_INFO, (packet) => {
+    console.log(packet);
+    filename = './saved/' + packet["seed_name"] + 'savedItems.json';
+    notifiedItems = messageUtil.loadItems(filename); //need to make the filename related to the seedID
+});
+
 const locationItem = {};
+
 client.addListener(archipelago.SERVER_PACKET_TYPE.LOCATION_INFO, ({ locations }) => {
     locations?.forEach(({ item, player, location }) => locationItem[location] = { player, item });
-    console.log('items mapped to locations', locationItem)
+    //console.log('items mapped to locations', locationItem)
 });
 client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet) => {
     var items = packet["items"];
@@ -38,6 +47,7 @@ client.addListener(archipelago.SERVER_PACKET_TYPE.RECEIVED_ITEMS, (packet) => {
         const itemflags = items[i]["flags"];
         if (notifiedItems.includes(itemId)) continue;
         notifiedItems.push(itemId);
+        messageUtil.saveItems(notifiedItems, filename);
         console.log("Item received", i, items[i]);
         onItemRecieved(itemId, client.items.name(gameName, itemId), client.players.name(items[i]["player"]), itemflags);
     }
@@ -47,6 +57,7 @@ client.addListener(archipelago.SERVER_PACKET_TYPE.BOUNCED, (packet) => {
     if (packet["tags"].some(str => str.includes('DeathLink'))) {
         const data = packet["data"];
         console.log("DeathLink:", data["cause"], data["source"]);
+        if (data["source"] === connectionInfo.name) { return; }
         return onDeathLink(data["source"],data["cause"]);
     }
     return;
@@ -56,6 +67,10 @@ client.addListener(archipelago.SERVER_PACKET_TYPE.PRINT_JSON, (packet, message) 
         var countdown = message;
         console.log(countdown);
         onCountdown(countdown);
+    }
+    if (packet.type === archipelago.PRINT_JSON_TYPE.HINT) {
+        console.log(message);
+        onHint(message);
     }
 });
 
@@ -99,11 +114,32 @@ module.exports = {
     GOALS: [LOCATIONS.TREE1, LOCATIONS.TREE2, LOCATIONS.TREE3, LOCATIONS.TREE4, LOCATIONS.TREE5,
             LOCATIONS.TREE6, LOCATIONS.TREE7, LOCATIONS.TREE8, LOCATIONS.TREE9, LOCATIONS.TREE10],
 
+    connectChati: function (message) {
+        let text = message + ""
+        conStrs = text.split(" ");
+        connectionInfo.hostname = conStrs[1] || config.connectionInfo.hostname;
+        connectionInfo.port = Number(conStrs[2]) || config.connectionInfo.port;
+        connectionInfo.playerName = conStrs[3] || config.connectionInfo.playerName;
+        if (client.status !== archipelago.CLIENT_STATUS.DISCONNECTED) {
+            client.disconnect();
+        }
+        client.connect(connectionInfo)
+            .then(() => {
+                console.log("connected");
+                client.updateStatus(archipelago.CLIENT_STATUS.CONNECTED);
+            })
+            .catch((error) => { console.error("Failed to connect:", error); });
+    },
+
     checkGoal: function (lastLocation) {
         // include lastLocation because client.locations.checked may not be updated yer
         const checked = [...client.locations.checked, lastLocation];
         console.log(checked, this.GOALS);
         return this.GOALS.every((goal) => checked.includes(goal));
+    },
+
+    getHints: function () {
+        return client.hints.mine;
     },
 
     maybeTriggerItemLocationMap: function () {
@@ -137,13 +173,15 @@ module.exports = {
         client.locations.check(locationId);
     },
 
-    setOnItemRecieved: function (fct) {
-        onItemRecieved = fct;
+    setOnItemRecieved: function (func) {
+        onItemRecieved = func;
     },
     setOnDeathLink: function (func) {
         onDeathLink = func;
     },
-
+    setHints: function (func) {
+        onHint = func;
+    },
     setOnCountdown: function (func) {
         onCountdown = func;
     },
@@ -154,11 +192,11 @@ module.exports = {
     giveDeathLink: function (reason) {
         return client.send(
             {
-                cmd: archipelago.CLIENT_PACKET_TYPE.BOUNCE,
+                cmd: "Bounce",
                 tags: ["DeathLink"],
                 data: {
-                    time: Date.now,
-                    source: client.player.name,
+                    time: Date.now() * .001,
+                    source: connectionInfo.name,
                     cause: reason
                 }
             })

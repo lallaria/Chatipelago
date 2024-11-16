@@ -1,66 +1,47 @@
-/* This should return plaintext to be output by the bot, parsed from json
-
-Example:
-You found something! It looks very important!
-
-You found something! I...don't think it will help.
-
-You found <specific local item>
-
-and for the LULs
-You died. (deathlink)
-
-
-Additional thoughts:
-Cooldown timer should be in this server, not on the bot side.
-!open or !openchest on botside for the participation in opening randomly
-
-A mod-only command (can eventually do twitch channel points or bits, etc) !openloc <LOCATION> to force a specific location check as a response to another player's hint.
-As this is a GET bot, it should likely be able to parse something like bot-get.js?loc=LOCATION
-
-Participation should dictate the chance of finding something.  Should be a setting.
-Note: I am going to force logic to require that Chat has at least 3 specific locking items (3 keys?) before they can find anything very important.
-
-1 person = 1% chance
-or
-1 person = 5% chance
-
-x people = y% chance
-
-There will be multiple "regions" and "locations", but the Progression region will have some number of progression items in specific locations, guaranteed to be important.
-We can guarantee a 100% chance.
-
+/* 
+Parses after events are received
 
 */
 
 var goal = false;
 var currently_dead = false;
+var strMessage = "";
 
 var server = require('./server.js');
 var webhook = require('./webhook-put.js');
 var archipelagoHelper = require('./archipelagoHelper.js');
 var config = require('./config.js');
 var messageUtil = require('./messageUtil.js');
+var thesaurus = require('thesaurus');
 
 server.setOnEvent(onEvent);
 archipelagoHelper.setOnItemRecieved(onItem);
 archipelagoHelper.setOnCountdown(onCountdown);
 archipelagoHelper.setOnDeathLink(onDeathLink);
+archipelagoHelper.setHints(onHint);
 
 function onEvent(message) {
-    message = message.replace('/', "");
-    message = message.replaceAll('+', " ");
-    capture_death = message.match(/@[\w]*\s.*mauled.*/);
-    if (capture_death != null) { deathLink(capture_death[0]); }
-    command_match = message.match(/^![a-z]*/);
+    console.log(strMessage);
+    strMessage = message.replace('/', "");
+    strMessage = strMessage.replaceAll('+', " ");
+    command_match = strMessage.match(/^![a-z]*/);
     if (command_match != null) {
         archipelagoHelper.maybeTriggerItemLocationMap();
         switch (command_match[0]) {
+            case '!chaticonnect':
+                onChatiConnect(strMessage);
+                break;
             case '!search':
                 attemptSearch();
                 break;
             case '!loot':
                 attemptLoot();
+                break;
+            case '!hint':
+                archipelagoHelper.getHints();
+                break;
+            case '!deathlink':
+                deathLink(strMessage.substring(11));
                 break;
             default:
                 break;
@@ -70,24 +51,31 @@ function onEvent(message) {
 function onItem(id, item, player, flags) {
     if (!goal) {
         if (flags === 4) {
-            if (Math.random() < .4) { currently_dead = true; }
+            if (Math.random() < .8) { currently_dead = true; }
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
         }
         else if (flags === 1) {
-            webhook.postInChat(`${player} found us ${item}, it's really important.`, false, false);
+            webhook.postInChat(`bbirbShiny ${player} found us ${item}, it's really important. bbirbShiny`, false, false);
+        }
+        else if (player === "Chat") {
+            webhook.postInChat(messageUtil.generateRandomText(messageUtil.SELF_FIND, { item: item }), false, false);
         }
         else {
             if (item.match(/![a-z]*/) != null) { webhook.postInChat(`${item} - from ${player}`, false, false); }
             else { webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: item, player: player }), false, false); }
+            if (item.match(/FROG/) != null) { webhook.postInChat("And that's a frog fact.") }
         }
     }
 }
 function onDeathLink(player, cause) {
-    if (cause.length > 0) { webhook.postInChat(cause, false, false); }
+    if (typeof cause !== "undefined") { webhook.postInChat(cause, false, false); }
     webhook.postInChat(messageUtil.generateRandomText(messageUtil.BOUNCED, { player: player }), false, true);
 }
 function onCountdown(value) {
-    webhook.postInChat(value.replace("[Server]: ", ""), false, false);
+    webhook.postInChat(`${value.replace("[Server]: ", "")}`, false, false);
+}
+function onHint(hinttext) {
+    webhook.postInChat(hinttext, false, false);
 }
 
 let currentLocation;
@@ -103,8 +91,12 @@ function notifyCooldown() {
     webhook.postInChat(messageUtil.generateRandomText(messageUtil.OFF_COOLDOWN))
 }
 
-function deathLink(reason) {
-    webhook.postInChat(`Watch out everyone, ${reason}! This could be bad...`, false, false);
+function deathLink(player) {
+    randAtk = thesaurus.find("end");
+    console.log(randAtk);
+    var reason = `${player} met their ${messageUtil.getRandomIndex(randAtk)} by ${messageUtil.getRandomIndex(messageUtil.KILLER)}!`
+    webhook.postInChat(`Good luck everyone, @${reason}`, false, false);
+    currently_dead = true;
     if (currently_dead) {
         currently_dead = false;
         return archipelagoHelper.giveDeathLink(reason);
@@ -132,8 +124,10 @@ function attemptLoot() {
             lootAttemps = 0;
             searchAttempts = 0;
             archipelagoHelper.claimCheck(triggeredLocation);
-            itemName = archipelagoHelper.getItemNameByLocation(triggeredLocation)
-            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_FOUND, { item: itemName }));
+            itemName = archipelagoHelper.getItemNameByLocation(triggeredLocation);
+            if (itemName.match(/Chat/) == null) {
+                webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_FOUND, { item: itemName }));
+            }
             if (archipelagoHelper.checkGoal(triggeredLocation)) {
                 archipelagoHelper.goal();
                 webhook.postInChat('Did...did we find everything already?!');
@@ -163,4 +157,9 @@ function attemptSearch() {
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, {location: archipelagoHelper.getLocationName(currentLocation)}));
         }
     }
+}
+function onChatiConnect(message) {
+    let text = message + ""
+    console.log(`Connecting to ${text.slice(14)}`);
+    archipelagoHelper.connectChati(text);
 }
