@@ -5,7 +5,6 @@ import * as apWorld from './apWorldSettings.js'
 export {
     connect,
     checkGoal,
-    maybeTriggerItemLocationMap,
     getItemNameByLocation,
     getCheckableLocation,
     isItemObtained,
@@ -30,6 +29,7 @@ function connect() {
     let url = 'wss://' + config.connectionInfo.hostname + ':' + config.connectionInfo.port;
     client.login(url, config.connectionInfo.playerName, apWorld.GAME_NAME).then(record => {
         console.log("connected");
+        FillItemLocationMap();
         client.updateTags(config.connectionInfo.tags);
     }).catch(error => {
         console.error("Failed to connect:", error.message);
@@ -70,7 +70,7 @@ function checkGoal(lastLocation) {
     return apWorld.GOALS.every((goal) => checked.includes(goal));
 }
 
-function maybeTriggerItemLocationMap() {
+function FillItemLocationMap() {
     if (Object.entries(locationItem).length > 0)
         return
     // scout all locations to map items locations
@@ -122,7 +122,7 @@ function setOnCountdown(func) {
 function getLocationName(locationId) {
     let item = locationItem[locationId] ?? {};
     if (!item) return;
-    return `${item.location.name}`;
+    return `${item.locationName}`;
 }
 
 function giveDeathLink(reason) {

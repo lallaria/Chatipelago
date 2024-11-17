@@ -58,7 +58,6 @@ function onEvent(message) {
     }
     let command_match = message.match(/^![a-z]*/);
     if (command_match != null) {
-        archipelagoHelper.maybeTriggerItemLocationMap();
         switch (command_match[0]) {
             case '!search':
                 attemptSearch();
