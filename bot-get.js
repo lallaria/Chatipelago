@@ -52,11 +52,11 @@ archipelagoHelper.connect();
 function onEvent(message) {
     message = message.replace('/', "");
     message = message.replaceAll('+', " ");
-    capture_death = message.match(/@[\w]*\s.*mauled.*/);
+    let capture_death = message.match(/@[\w]*\s.*mauled.*/);
     if (capture_death != null) {
         deathLink(capture_death[0]);
     }
-    command_match = message.match(/^![a-z]*/);
+    let command_match = message.match(/^![a-z]*/);
     if (command_match != null) {
         archipelagoHelper.maybeTriggerItemLocationMap();
         switch (command_match[0]) {
@@ -127,9 +127,10 @@ function deathLink(reason) {
         currently_dead = false;
         return archipelagoHelper.giveDeathLink(reason);
     }
-    return
 }
 
+
+let lostIt = false;
 function attemptLoot() {
     if (isInCooldown()) return;
     if (!currentLocation) {
@@ -141,16 +142,16 @@ function attemptLoot() {
         return;
     }
     lootAttemps++;
-    lostit = false;
     if (lootAttemps >= config.gameSettings.lootAttemptsRequired) {
         if (Math.random() < config.gameSettings.lootChance || lostit) {
+            lostIt = false;
             const triggeredLocation = currentLocation;
             currentLocation = undefined;
             lastCheckTime = new Date();
             lootAttemps = 0;
             searchAttempts = 0;
             archipelagoHelper.claimCheck(triggeredLocation);
-            itemName = archipelagoHelper.getItemNameByLocation(triggeredLocation)
+            let itemName = archipelagoHelper.getItemNameByLocation(triggeredLocation)
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_FOUND, {item: itemName}));
             if (archipelagoHelper.checkGoal(triggeredLocation)) {
                 archipelagoHelper.goal();
@@ -162,7 +163,7 @@ function attemptLoot() {
         } else {
             lootAttemps = 0;
             searchAttempts = 0;
-            lostit = true;
+            lostIt = true;
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_MISSED, {location: archipelagoHelper.getLocationName(currentLocation)}));
         }
     }

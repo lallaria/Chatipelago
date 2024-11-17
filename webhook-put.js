@@ -24,7 +24,7 @@ function post(message, url, trap, bounced) {
         var content = {text: message, trap: false, bounced: true};
     }
 
-    response = fetch(url, {
+    let response = fetch(url, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
