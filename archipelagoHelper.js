@@ -1,6 +1,7 @@
 import * as archipelago from 'archipelago.js'
 import * as config from './config.js';
 import * as apWorld from './apWorldSettings.js'
+import * as messageUtil from './messageUtil.js'
 
 export {
     connect,
@@ -12,6 +13,7 @@ export {
     setOnItemRecieved,
     setOnDeathLink,
     setOnCountdown,
+    setOnHints,
     getLocationName,
     giveDeathLink,
     goal
@@ -25,12 +27,20 @@ import {WebSocket} from "ws";
 global.WebSocket = WebSocket;
 client.options.debugLogVersions = false;
 
-function connect() {
-    let url = 'wss://' + config.connectionInfo.hostname + ':' + config.connectionInfo.port;
-    client.login(url, config.connectionInfo.playerName, apWorld.GAME_NAME).then(record => {
+let cacheLoaded;
+function connect(message) {
+    let text = message + ""
+    let conStrs = text.split(" ");
+    let hostname = conStrs[1] || config.connectionInfo.hostname;
+    let port = Number(conStrs[2]) || config.connectionInfo.port;
+    let playerName = conStrs[3] || config.connectionInfo.playerName;
+    let tags = conStrs[4] || config.connectionInfo.tags;
+    let url = 'wss://' + hostname + ':' + port;
+    cacheLoaded = false;
+    client.login(url, playerName, apWorld.GAME_NAME).then(record => {
         console.log("connected");
-        FillItemLocationMap();
-        client.updateTags(config.connectionInfo.tags);
+        fillItemLocationMap();
+        client.updateTags(tags);
     }).catch(error => {
         console.error("Failed to connect:", error.message);
     });
@@ -39,19 +49,32 @@ function connect() {
 let onItemReceived;
 let onDeathLink;
 let onCountdown;
-const notifiedItems = []
+let onHint;
+let fileName;
+let notifiedItems = [];
 const locationItem = {};
 
 client.items.on("itemsReceived", (items) => {
+    loadCache();    //make sure the cache is loaded before sending any item to chat
     for (const item of items) {
         const itemId = item.id;
         const itemFlags = item.flags;
         if (notifiedItems.includes(itemId)) continue;
         notifiedItems.push(itemId);
+        messageUtil.saveItems(notifiedItems, fileName);
         console.log("Item received", item);
         onItemReceived(itemId, item.name, item.sender, itemFlags);
     }
 })
+
+function loadCache() {
+    if (!cacheLoaded)
+    {
+        cacheLoaded = true;
+        fileName = './saved/' + client.room.seedName + 'savedItems.json';
+        notifiedItems = messageUtil.loadItems(fileName); //need to make the filename related to the seedID
+    }
+}
 
 client.deathLink.on("deathReceived", (source, time, cause) => {
     console.log("DeathLink:", cause, source);
@@ -63,6 +86,11 @@ client.messages.on("countdown", (message) => {
     onCountdown(message);
 })
 
+client.items.on("hintReceived", (hint) =>{
+    console.log(hint);
+    onHint(hint);
+})
+
 function checkGoal(lastLocation) {
     // include lastLocation because client.locations.checked may not be updated yet
     const checked = [...client.room.checkedLocations, lastLocation];
@@ -70,7 +98,7 @@ function checkGoal(lastLocation) {
     return apWorld.GOALS.every((goal) => checked.includes(goal));
 }
 
-function FillItemLocationMap() {
+function fillItemLocationMap() {
     if (Object.entries(locationItem).length > 0)
         return
     // scout all locations to map items locations
@@ -78,7 +106,6 @@ function FillItemLocationMap() {
         items?.forEach(item => {
             locationItem[item.locationId] = item;
         });
-        console.log('items mapped to locations', locationItem)
     });
 }
 
@@ -86,6 +113,10 @@ function getItemNameByLocation(locationId) {
     let item = locationItem[locationId] ?? {};
     if (!item) return;
     return `${item.name} for ${item.receiver.name}`;
+}
+
+function getHints () {
+    return client.hints.mine;
 }
 
 function getCheckableLocation() {
@@ -117,6 +148,10 @@ function setOnDeathLink(func) {
 
 function setOnCountdown(func) {
     onCountdown = func;
+}
+
+function setOnHints(func) {
+    onHint = func;
 }
 
 function getLocationName(locationId) {

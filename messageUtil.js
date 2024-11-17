@@ -1,14 +1,25 @@
 import * as fs from 'fs';
+import exit from 'process';
 
 export {
     generateRandomText,
+    loadItems,
+    saveItems,
+    SELF_FIND,
     OFF_COOLDOWN,
     LOCATION_FOUND,
     ITEM_MISSED,
     ITEM_FOUND,
     ITEM_RECIEVED,
     BOUNCED,
-    ITEM_TRAP
+    ITEM_TRAP,
+    BOUNCE,
+    KILLER
+}
+
+function getRandomIndex(textList) {
+    var randomPick = Math.floor(Math.random() * textList.length);
+    return textList[randomPick];
 }
 
 function loadJson(filename) {
@@ -22,10 +33,8 @@ function loadJson(filename) {
     return messageList;
 }
 
-function generateRandomText (textList, variables) {
-    var randomPick = Math.floor(Math.random() * textList.length);
-
-    var text = textList[randomPick];
+function generateRandomText(textList, variables) {
+    var text = getRandomIndex(textList);
 
     if (variables != null) {
         var keys = Object.keys(variables);
@@ -39,6 +48,7 @@ function generateRandomText (textList, variables) {
     return text;
 }
 
+let SELF_FIND = loadJson('messages/selfFind.json');
 let OFF_COOLDOWN = loadJson('messages/offCooldown.json');
 let LOCATION_FOUND = loadJson('messages/locationFound.json');
 let ITEM_MISSED = loadJson('messages/itemMissed.json');
@@ -46,3 +56,38 @@ let ITEM_FOUND = loadJson('messages/itemFound.json');
 let ITEM_RECIEVED = loadJson('messages/itemRecieved.json');
 let BOUNCED = loadJson('messages/bounced.json'); //deathlink
 let ITEM_TRAP = loadJson('messages/itemTrap.json');
+let BOUNCE = loadJson('messages/bounce.json');
+let KILLER = loadJson('messages/theKiller.json');
+
+function myCallback() {
+    console.log("Saved");
+}
+
+function saveItems(collectedItems, filename) {
+    var jsonItems = JSON.stringify(collectedItems);
+    fs.writeFile(filename, jsonItems, 'utf8', myCallback);
+}
+
+function loadItems(filename) {
+    var itemList = [];
+    try {
+        var json = JSON.parse(fs.readFileSync(filename, 'utf8'));
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            return itemList;
+        } else {
+            console.log(err);
+            exit();
+        }
+    }
+
+    for (var i = 0; i < json.length; ++i) {
+        itemList[i] = json[i];
+    }
+
+    return itemList;
+}
+
+
+
+

@@ -137,4 +137,3 @@ dist
 /nuget.config
 /.gitattributes
 /bin/Microsoft.NodejsTools.WebRole.dll
-/config.js
