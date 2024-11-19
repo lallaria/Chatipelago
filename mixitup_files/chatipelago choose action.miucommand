@@ -1,0 +1,94 @@
+{
+  "$type": "MixItUp.Base.Model.Commands.ActionGroupCommandModel, MixItUp.Base",
+  "RunOneRandomly": false,
+  "Name": "Choose Trapped Player",
+  "Type": 4,
+  "IsEnabled": true,
+  "Unlocked": true,
+  "IsEmbedded": false,
+  "GroupName": "Chatipelago",
+  "Triggers": [],
+  "Requirements": {
+    "$type": "MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base",
+    "Requirements": []
+  },
+  "Actions": [
+    {
+      "$type": "MixItUp.Base.Model.Actions.ScriptActionModel, MixItUp.Base",
+      "ActionType": 0,
+      "Script": "using System;\r\n\r\nnamespace CustomNamespace\r\n{\r\n    public class CustomClass\r\n    {\r\n        public object Run() \r\n        {\r\n            string chatilootqueue = \"$chatilootqueue\";\r\n            string[] chatiqueueArray = chatilootqueue.Trim().Split(' ');\r\n            Random rand = new Random();\r\n            int rIndex = rand.Next(chatiqueueArray.Length);\r\n            return chatiqueueArray[rIndex];\r\n        }\r\n    }\r\n}",
+      "Name": "Choose Name from String of Names",
+      "Type": 38,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.ChatActionModel, MixItUp.Base",
+      "ChatText": "$scriptresult",
+      "SendAsStreamer": false,
+      "IsWhisper": false,
+      "WhisperUserName": null,
+      "Name": "Script Debug Message",
+      "Type": 1,
+      "Enabled": false
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.SpecialIdentifierActionModel, MixItUp.Base",
+      "SpecialIdentifierName": "message",
+      "ReplacementText": "!deathlink $scriptresult",
+      "MakeGloballyUsable": false,
+      "ShouldProcessMath": false,
+      "ReplaceSpecialIdentifiersInFunctions": false,
+      "Name": "Construct command for Chati",
+      "Type": 12,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
+      "Url": "https://chati.prismativerse.com/$message",
+      "ResponseType": 0,
+      "JSONToSpecialIdentifiers": null,
+      "Name": "Send deathlink command to Chati",
+      "Type": 11,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.CommandActionModel, MixItUp.Base",
+      "ActionType": 0,
+      "PreMadeType": null,
+      "Arguments": null,
+      "WaitForCommandToFinish": true,
+      "IgnoreUsageRequirements": true,
+      "CommandGroupName": null,
+      "Name": "Clear Queue",
+      "Type": 20,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.WaitActionModel, MixItUp.Base",
+      "Amount": "5",
+      "Name": "Wait for everything to post",
+      "Type": 7,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.ModerationActionModel, MixItUp.Base",
+      "ActionType": 0,
+      "TargetUsername": "@$scriptresult",
+      "TimeoutAmount": "60",
+      "ModerationReason": "Chatipelago",
+      "Name": "Timeout Chosen User",
+      "Type": 22,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.ChatActionModel, MixItUp.Base",
+      "ChatText": "@$scriptresult was fake timed out because I can",
+      "SendAsStreamer": true,
+      "IsWhisper": false,
+      "WhisperUserName": null,
+      "Name": "Fake Timeout for Debug",
+      "Type": 1,
+      "Enabled": false
+    }
+  ]
+}

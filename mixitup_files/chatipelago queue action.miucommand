@@ -1,0 +1,28 @@
+{
+  "$type": "MixItUp.Base.Model.Commands.ActionGroupCommandModel, MixItUp.Base",
+  "RunOneRandomly": false,
+  "Name": "Enable and Clear ChatiQueue Variable",
+  "Type": 4,
+  "IsEnabled": true,
+  "Unlocked": true,
+  "IsEmbedded": false,
+  "GroupName": "Chatipelago",
+  "Triggers": [],
+  "Requirements": {
+    "$type": "MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base",
+    "Requirements": []
+  },
+  "Actions": [
+    {
+      "$type": "MixItUp.Base.Model.Actions.SpecialIdentifierActionModel, MixItUp.Base",
+      "SpecialIdentifierName": "chatilootqueue",
+      "ReplacementText": " ",
+      "MakeGloballyUsable": true,
+      "ShouldProcessMath": false,
+      "ReplaceSpecialIdentifiersInFunctions": false,
+      "Name": "Special Identifier",
+      "Type": 12,
+      "Enabled": true
+    }
+  ]
+}
