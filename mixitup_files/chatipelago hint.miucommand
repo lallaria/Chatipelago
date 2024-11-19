@@ -2,21 +2,21 @@
   "$type": "MixItUp.Base.Model.Commands.ChatCommandModel, MixItUp.Base",
   "IncludeExclamation": true,
   "Wildcards": false,
-  "Name": "Chati Connect",
+  "Name": "Chati hint",
   "Type": 1,
   "IsEnabled": true,
-  "Unlocked": true,
+  "Unlocked": false,
   "IsEmbedded": false,
   "GroupName": "Chatipelago",
-  "Triggers": [ "chaticonnect" ],
+  "Triggers": [ "hint" ],
   "Requirements": {
     "$type": "MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base",
     "Requirements": [
       {
         "$type": "MixItUp.Base.Model.Requirements.RoleRequirementModel, MixItUp.Base",
         "StreamingPlatform": 2,
-        "UserRole": 800,
-        "UserRoleList": [],
+        "UserRole": 0,
+        "UserRoleList": [ 500, 800, 900 ],
         "SubscriberTier": 1,
         "YouTubeMembershipLevelID": null,
         "TrovoCustomRole": null,
@@ -30,27 +30,8 @@
       },
       {
         "$type": "MixItUp.Base.Model.Requirements.ArgumentsRequirementModel, MixItUp.Base",
-        "Items": [
-          {
-            "$type": "MixItUp.Base.Model.Requirements.ArgumentsRequirementItemModel, MixItUp.Base",
-            "Name": "host",
-            "Type": 3,
-            "Optional": true
-          },
-          {
-            "$type": "MixItUp.Base.Model.Requirements.ArgumentsRequirementItemModel, MixItUp.Base",
-            "Name": "port",
-            "Type": 1,
-            "Optional": true
-          },
-          {
-            "$type": "MixItUp.Base.Model.Requirements.ArgumentsRequirementItemModel, MixItUp.Base",
-            "Name": "name",
-            "Type": 3,
-            "Optional": true
-          }
-        ],
-        "AssignToSpecialIdentifiers": true
+        "Items": [],
+        "AssignToSpecialIdentifiers": false
       },
       {
         "$type": "MixItUp.Base.Model.Requirements.ThresholdRequirementModel, MixItUp.Base",
@@ -70,14 +51,9 @@
     {
       "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
       "Url": "https://chati.prismativerse.com/$message",
-      "ResponseType": 1,
-      "JSONToSpecialIdentifiers": {
-        "$type": "System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[System.String, mscorlib]], mscorlib",
-        "$host": "host",
-        "$port": "port",
-        "$name": "name"
-      },
-      "Name": "Send host host port name",
+      "ResponseType": 0,
+      "JSONToSpecialIdentifiers": null,
+      "Name": "Web Request",
       "Type": 11,
       "Enabled": true
     }
