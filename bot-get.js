@@ -20,8 +20,6 @@ archipelagoHelper.setOnCountdown(onCountdown);
 archipelagoHelper.setOnDeathLink(onDeathLink);
 archipelagoHelper.setOnHints(onHint);
 
-archipelagoHelper.connect();
-
 function onEvent(message) {
     console.log(strMessage);
     strMessage = message.replace('/', "");
