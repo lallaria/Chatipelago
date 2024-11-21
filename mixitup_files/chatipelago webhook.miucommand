@@ -1,1 +1,223 @@
-{"$type":"MixItUp.Base.Model.Commands.WebhookCommandModel, MixItUp.Base","JSONParameters":[{"$type":"MixItUp.Base.Model.Commands.WebhookJSONParameter, MixItUp.Base","JSONParameterName":"text","SpecialIdentifierName":"text"},{"$type":"MixItUp.Base.Model.Commands.WebhookJSONParameter, MixItUp.Base","JSONParameterName":"trap","SpecialIdentifierName":"trap"},{"$type":"MixItUp.Base.Model.Commands.WebhookJSONParameter, MixItUp.Base","JSONParameterName":"bounced","SpecialIdentifierName":"bounced"}],"ID":"5dfc7fe2-c6c9-46c6-b472-08dc9d316ad3","Name":"Chati Post","Type":10,"IsEnabled":true,"Unlocked":true,"IsEmbedded":false,"GroupName":null,"Triggers":[],"Requirements":{"$type":"MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base","Requirements":[]},"Actions":[{"$type":"MixItUp.Base.Model.Actions.ChatActionModel, MixItUp.Base","ChatText":"$text","SendAsStreamer":false,"IsWhisper":false,"WhisperUserName":null,"ID":"2cd80616-d826-42f2-9cf1-7a63884395d7","Name":"Chat Message","Type":1,"Enabled":true},{"$type":"MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base","CaseSensitive":false,"Operator":0,"RepeatWhileTrue":false,"Clauses":[{"$type":"MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base","ComparisionType":0,"Value1":"$bounced","Value2":"true","Value3":""}],"CommandID":"00000000-0000-0000-0000-000000000000","Actions":[{"$type":"MixItUp.Base.Model.Actions.TwitchActionModel, MixItUp.Base","ContentClassificationLabelIDs":[],"ChatSettingsSlowModeDuration":null,"ChatSettingsFollowerModeDuration":null,"ChatSettingsSubscriberMode":null,"ChatSettingsEmoteMode":true,"ChatSettingsUniqueChatMode":null,"ChatSettingsNonModeratorChatDuration":null,"VIPUserAutomaticRemovalDurationSpan":null,"ActionType":25,"ShowInfoInChat":false,"Username":null,"Text":null,"CustomTags":[],"AdLength":60,"ClipIncludeDelay":false,"StreamMarkerDescription":null,"ChannelPointRewardID":"00000000-0000-0000-0000-000000000000","ChannelPointRewardName":null,"ChannelPointRewardDescription":null,"ChannelPointRewardState":false,"ChannelPointRewardPaused":false,"ChannelPointRewardBackgroundColor":null,"ChannelPointRewardCostString":null,"ChannelPointRewardUpdateCooldownsAndLimits":false,"ChannelPointRewardMaxPerStreamString":null,"ChannelPointRewardMaxPerUserString":null,"ChannelPointRewardGlobalCooldownString":null,"ChannelPointRewardCost":-1,"ChannelPointRewardMaxPerStream":-1,"ChannelPointRewardMaxPerUser":-1,"ChannelPointRewardGlobalCooldown":-1,"PollTitle":null,"PollDurationSeconds":0,"PollChannelPointsCost":0,"PollBitsCost":0,"PollChoices":[],"PredictionTitle":null,"PredictionDurationSeconds":0,"PredictionOutcomes":[],"TimeLength":null,"Message":null,"Color":0,"SendAnnouncementAsStreamer":true,"Actions":[],"ID":"dd3074b5-28db-4682-9088-34b5cc3fcc6c","Name":"Twitch","Type":25,"Enabled":true},{"$type":"MixItUp.Base.Model.Actions.WaitActionModel, MixItUp.Base","Amount":"30","ID":"cecf2b56-c25c-415c-be2c-10d836f990cc","Name":"Wait","Type":7,"Enabled":true},{"$type":"MixItUp.Base.Model.Actions.TwitchActionModel, MixItUp.Base","ContentClassificationLabelIDs":[],"ChatSettingsSlowModeDuration":null,"ChatSettingsFollowerModeDuration":null,"ChatSettingsSubscriberMode":null,"ChatSettingsEmoteMode":false,"ChatSettingsUniqueChatMode":null,"ChatSettingsNonModeratorChatDuration":null,"VIPUserAutomaticRemovalDurationSpan":null,"ActionType":25,"ShowInfoInChat":false,"Username":null,"Text":null,"CustomTags":[],"AdLength":60,"ClipIncludeDelay":false,"StreamMarkerDescription":null,"ChannelPointRewardID":"00000000-0000-0000-0000-000000000000","ChannelPointRewardName":null,"ChannelPointRewardDescription":null,"ChannelPointRewardState":false,"ChannelPointRewardPaused":false,"ChannelPointRewardBackgroundColor":null,"ChannelPointRewardCostString":null,"ChannelPointRewardUpdateCooldownsAndLimits":false,"ChannelPointRewardMaxPerStreamString":null,"ChannelPointRewardMaxPerUserString":null,"ChannelPointRewardGlobalCooldownString":null,"ChannelPointRewardCost":-1,"ChannelPointRewardMaxPerStream":-1,"ChannelPointRewardMaxPerUser":-1,"ChannelPointRewardGlobalCooldown":-1,"PollTitle":null,"PollDurationSeconds":0,"PollChannelPointsCost":0,"PollBitsCost":0,"PollChoices":[],"PredictionTitle":null,"PredictionDurationSeconds":0,"PredictionOutcomes":[],"TimeLength":null,"Message":null,"Color":0,"SendAnnouncementAsStreamer":true,"Actions":[],"ID":"6946eba8-41e6-4db1-8ed9-faaf9d64446f","Name":"Twitch","Type":25,"Enabled":true}],"ID":"ec978813-2e51-48ce-91e1-16d113b6310e","Name":"Conditional","Type":17,"Enabled":true},{"$type":"MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base","CaseSensitive":false,"Operator":0,"RepeatWhileTrue":false,"Clauses":[{"$type":"MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base","ComparisionType":0,"Value1":"$trap","Value2":"true","Value3":""}],"CommandID":"00000000-0000-0000-0000-000000000000","Actions":[{"$type":"MixItUp.Base.Model.Actions.GameQueueActionModel, MixItUp.Base","ActionType":5,"RoleRequirement":null,"TargetUsername":null,"ID":"06d647c9-7a7f-409e-8285-4f03819af9b5","Name":"Game Queue","Type":9,"Enabled":true}],"ID":"b8e77a44-b607-4094-a4f9-b415b8cf6135","Name":"Conditional","Type":17,"Enabled":true}]}
+{
+  "$type": "MixItUp.Base.Model.Commands.WebhookCommandModel, MixItUp.Base",
+  "JSONParameters": [
+    {
+      "$type": "MixItUp.Base.Model.Commands.WebhookJSONParameter, MixItUp.Base",
+      "JSONParameterName": "text",
+      "SpecialIdentifierName": "text"
+    },
+    {
+      "$type": "MixItUp.Base.Model.Commands.WebhookJSONParameter, MixItUp.Base",
+      "JSONParameterName": "trap",
+      "SpecialIdentifierName": "trap"
+    },
+    {
+      "$type": "MixItUp.Base.Model.Commands.WebhookJSONParameter, MixItUp.Base",
+      "JSONParameterName": "bounced",
+      "SpecialIdentifierName": "bounced"
+    }
+  ],
+  "Name": "Chati Post",
+  "Type": 10,
+  "IsEnabled": true,
+  "Unlocked": false,
+  "IsEmbedded": false,
+  "GroupName": null,
+  "Triggers": [],
+  "Requirements": {
+    "$type": "MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base",
+    "Requirements": []
+  },
+  "Actions": [
+    {
+      "$type": "MixItUp.Base.Model.Actions.ChatActionModel, MixItUp.Base",
+      "ChatText": "$text",
+      "SendAsStreamer": false,
+      "IsWhisper": false,
+      "WhisperUserName": null,
+      "Name": "Normal Chat",
+      "Type": 1,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base",
+      "CaseSensitive": false,
+      "Operator": 0,
+      "RepeatWhileTrue": false,
+      "Clauses": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+          "ComparisionType": 0,
+          "Value1": "$bounced",
+          "Value2": "true",
+          "Value3": ""
+        }
+      ],
+      "CommandID": "00000000-0000-0000-0000-000000000000",
+      "Actions": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.TwitchActionModel, MixItUp.Base",
+          "ContentClassificationLabelIDs": [],
+          "ChatSettingsSlowModeDuration": null,
+          "ChatSettingsFollowerModeDuration": null,
+          "ChatSettingsSubscriberMode": null,
+          "ChatSettingsEmoteMode": true,
+          "ChatSettingsUniqueChatMode": null,
+          "ChatSettingsNonModeratorChatDuration": null,
+          "VIPUserAutomaticRemovalDurationSpan": null,
+          "ActionType": 25,
+          "ShowInfoInChat": false,
+          "Username": null,
+          "Text": null,
+          "CustomTags": [],
+          "AdLength": 60,
+          "ClipIncludeDelay": false,
+          "StreamMarkerDescription": null,
+          "ChannelPointRewardID": "00000000-0000-0000-0000-000000000000",
+          "ChannelPointRewardName": null,
+          "ChannelPointRewardDescription": null,
+          "ChannelPointRewardState": false,
+          "ChannelPointRewardPaused": false,
+          "ChannelPointRewardBackgroundColor": null,
+          "ChannelPointRewardCostString": null,
+          "ChannelPointRewardUpdateCooldownsAndLimits": false,
+          "ChannelPointRewardMaxPerStreamString": null,
+          "ChannelPointRewardMaxPerUserString": null,
+          "ChannelPointRewardGlobalCooldownString": null,
+          "ChannelPointRewardCost": -1,
+          "ChannelPointRewardMaxPerStream": -1,
+          "ChannelPointRewardMaxPerUser": -1,
+          "ChannelPointRewardGlobalCooldown": -1,
+          "PollTitle": null,
+          "PollDurationSeconds": 0,
+          "PollChannelPointsCost": 0,
+          "PollBitsCost": 0,
+          "PollChoices": [],
+          "PredictionTitle": null,
+          "PredictionDurationSeconds": 0,
+          "PredictionOutcomes": [],
+          "TimeLength": null,
+          "Message": null,
+          "Color": 0,
+          "SendAnnouncementAsStreamer": true,
+          "Actions": [],
+          "Name": "Emote Only On",
+          "Type": 25,
+          "Enabled": true
+        },
+        {
+          "$type": "MixItUp.Base.Model.Actions.WaitActionModel, MixItUp.Base",
+          "Amount": "30",
+          "Name": "Wait",
+          "Type": 7,
+          "Enabled": true
+        },
+        {
+          "$type": "MixItUp.Base.Model.Actions.TwitchActionModel, MixItUp.Base",
+          "ContentClassificationLabelIDs": [],
+          "ChatSettingsSlowModeDuration": null,
+          "ChatSettingsFollowerModeDuration": null,
+          "ChatSettingsSubscriberMode": null,
+          "ChatSettingsEmoteMode": false,
+          "ChatSettingsUniqueChatMode": null,
+          "ChatSettingsNonModeratorChatDuration": null,
+          "VIPUserAutomaticRemovalDurationSpan": null,
+          "ActionType": 25,
+          "ShowInfoInChat": false,
+          "Username": null,
+          "Text": null,
+          "CustomTags": [],
+          "AdLength": 60,
+          "ClipIncludeDelay": false,
+          "StreamMarkerDescription": null,
+          "ChannelPointRewardID": "00000000-0000-0000-0000-000000000000",
+          "ChannelPointRewardName": null,
+          "ChannelPointRewardDescription": null,
+          "ChannelPointRewardState": false,
+          "ChannelPointRewardPaused": false,
+          "ChannelPointRewardBackgroundColor": null,
+          "ChannelPointRewardCostString": null,
+          "ChannelPointRewardUpdateCooldownsAndLimits": false,
+          "ChannelPointRewardMaxPerStreamString": null,
+          "ChannelPointRewardMaxPerUserString": null,
+          "ChannelPointRewardGlobalCooldownString": null,
+          "ChannelPointRewardCost": -1,
+          "ChannelPointRewardMaxPerStream": -1,
+          "ChannelPointRewardMaxPerUser": -1,
+          "ChannelPointRewardGlobalCooldown": -1,
+          "PollTitle": null,
+          "PollDurationSeconds": 0,
+          "PollChannelPointsCost": 0,
+          "PollBitsCost": 0,
+          "PollChoices": [],
+          "PredictionTitle": null,
+          "PredictionDurationSeconds": 0,
+          "PredictionOutcomes": [],
+          "TimeLength": null,
+          "Message": null,
+          "Color": 0,
+          "SendAnnouncementAsStreamer": true,
+          "Actions": [],
+          "ID": "eabcba8c-51e1-49fb-a8f9-b23e4a6964f0",
+          "Name": "Emote Only Off",
+          "Type": 25,
+          "Enabled": true
+        }
+      ],
+      "ID": "8486d86a-1022-4c29-9718-c20c71f33e9b",
+      "Name": "DeathLink from AP",
+      "Type": 17,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base",
+      "CaseSensitive": false,
+      "Operator": 0,
+      "RepeatWhileTrue": false,
+      "Clauses": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+          "ComparisionType": 0,
+          "Value1": "$trap",
+          "Value2": "true",
+          "Value3": ""
+        },
+        {
+          "$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+          "ComparisionType": 11,
+          "Value1": "$chatilootqueue",
+          "Value2": "\\w",
+          "Value3": ""
+        }
+      ],
+      "CommandID": "00000000-0000-0000-0000-000000000000",
+      "Actions": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.ChatActionModel, MixItUp.Base",
+          "ChatText": "$chatilootqueue",
+          "SendAsStreamer": false,
+          "IsWhisper": false,
+          "WhisperUserName": null,
+          "Name": "Debug Message",
+          "Type": 1,
+          "Enabled": false
+        },
+        {
+          "$type": "MixItUp.Base.Model.Actions.CommandActionModel, MixItUp.Base",
+          "ActionType": 0,
+          "PreMadeType": null,
+          "Arguments": null,
+          "WaitForCommandToFinish": true,
+          "IgnoreUsageRequirements": true,
+          "CommandGroupName": null,
+          "Name": "Choose Trapped Player",
+          "Type": 20,
+          "Enabled": true
+        }
+      ],
+      "Name": "Trap",
+      "Type": 17,
+      "Enabled": true
+    }
+  ]
+}

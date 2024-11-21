@@ -131,10 +131,10 @@ function attemptLoot() {
             if (itemName.match(/Chat/) == null) {
                 webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_FOUND, { item: itemName }));
             }
-            if (archipelagoHelper.checkGoal(triggeredLocation)) {
+            if (archipelagoHelper.checkGoal(triggeredLocation) && !goal) {
                 archipelagoHelper.goal();
-                webhook.postInChat('Did...did we find everything already?!');
-                return;
+                webhook.postInChat('You did it Chat! You completed your goal!');
+                goal = true;
             }
             setTimeout(notifyCooldown, config.gameSettings.checkCooldown * 1000);
 
