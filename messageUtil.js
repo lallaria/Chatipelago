@@ -5,6 +5,7 @@ export {
     generateRandomText,
     loadItems,
     saveItems,
+    getRandomIndex,
     SELF_FIND,
     OFF_COOLDOWN,
     LOCATION_FOUND,
@@ -14,7 +15,8 @@ export {
     BOUNCED,
     ITEM_TRAP,
     BOUNCE,
-    KILLER
+    KILLER,
+    HINTED
 }
 
 function getRandomIndex(textList) {
@@ -58,6 +60,7 @@ let BOUNCED = loadJson('messages/bounced.json'); //deathlink
 let ITEM_TRAP = loadJson('messages/itemTrap.json');
 let BOUNCE = loadJson('messages/bounce.json');
 let KILLER = loadJson('messages/theKiller.json');
+let HINTED = loadJson("messages/hintedItem.json");
 
 function myCallback() {
     console.log("Saved");

@@ -8,7 +8,8 @@ import * as webhook from './webhook-put.js';
 import * as archipelagoHelper from './archipelagoHelper.js';
 import * as config from './config.js';
 import * as messageUtil from './messageUtil.js';
-import * as thesaurus from 'thesaurus';
+import thesaurus from 'thesaurus';
+import {generateRandomText} from "./messageUtil.js";
 
 var goal = false;
 var currently_dead = false;
@@ -21,9 +22,9 @@ archipelagoHelper.setOnDeathLink(onDeathLink);
 archipelagoHelper.setOnHints(onHint);
 
 function onEvent(message) {
-    console.log(strMessage);
     strMessage = message.replace('/', "");
     strMessage = strMessage.replaceAll('+', " ");
+    console.log(strMessage);
     let command_match = strMessage.match(/^![a-z]*/);
 
     if (command_match != null) {
@@ -70,15 +71,16 @@ function onItem(id, item, player, flags) {
 }
 
 function onDeathLink(player, cause) {
-    if (typeof cause !== "undefined") { webhook.postInChat(cause, false, false); }
+    if (typeof cause !== "undefined" && cause !== "") { webhook.postInChat(cause, false, false); }
     webhook.postInChat(messageUtil.generateRandomText(messageUtil.BOUNCED, { player: player }), false, true);
 }
 
 function onCountdown(value) {
     webhook.postInChat(`${value.replace("[Server]: ", "")}`, false, false);
 }
-function onHint(hinttext) {
-    webhook.postInChat(hinttext, false, false);
+function onHint(receiver, item, location, sender) {
+    let data = {receiver: receiver, item: item, location: location, sender: sender};
+    webhook.postInChat(messageUtil.generateRandomText(messageUtil.HINTED, data), false, false);
 }
 
 let currentLocation;
@@ -97,7 +99,7 @@ function notifyCooldown() {
 function deathLink(player) {
     let randAtk = thesaurus.find("end");
     console.log(randAtk);
-    let reason = `${player} met their ${messageUtil.getRandomIndex(randAtk)} by ${messageUtil.getRandomIndex(messageUtil.KILLER)}!`
+    let reason = `${player} met their ${messageUtil.getRandomIndex(randAtk)} by ${messageUtil.generateRandomText(messageUtil.KILLER)}!`
     webhook.postInChat(`Good luck everyone, @${reason}`, false, false);
     currently_dead = true;
     if (currently_dead) {
@@ -119,7 +121,7 @@ function attemptLoot() {
     }
     lootAttemps++;
     if (lootAttemps >= config.gameSettings.lootAttemptsRequired) {
-        if (Math.random() < config.gameSettings.lootChance || lostit) {
+        if (Math.random() < config.gameSettings.lootChance || lostIt) {
             lostIt = false;
             const triggeredLocation = currentLocation;
             currentLocation = undefined;

@@ -16,7 +16,8 @@ export {
     setOnHints,
     getLocationName,
     giveDeathLink,
-    goal
+    goal,
+    getHints
 }
 
 const client = new archipelago.Client();
@@ -88,8 +89,19 @@ client.messages.on("countdown", (message) => {
 
 client.items.on("hintReceived", (hint) =>{
     console.log(hint);
-    onHint(hint);
+    signalHint(hint);
 })
+
+function signalHint(hint){
+    if (!hint.found) {
+        let receiver = hint.item.receiver.name;
+        let item = hint.item.name;
+        let location = hint.item.locationName;
+        let sender = hint.item.sender.name;
+
+        onHint(receiver, item, location, sender);
+    }
+}
 
 function checkGoal(lastLocation) {
     // include lastLocation because client.locations.checked may not be updated yet
@@ -116,7 +128,9 @@ function getItemNameByLocation(locationId) {
 }
 
 function getHints () {
-    return client.hints.mine;
+    for (const hint of client.items.hints){
+        signalHint(hint);
+    }
 }
 
 function getCheckableLocation() {
