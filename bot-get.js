@@ -1,6 +1,5 @@
 /* 
 Parses after events are received
-
 */
 
 import * as server from './server.js';
@@ -9,11 +8,11 @@ import * as archipelagoHelper from './archipelagoHelper.js';
 import * as config from './config.js';
 import * as messageUtil from './messageUtil.js';
 import thesaurus from 'thesaurus';
-import {generateRandomText} from "./messageUtil.js";
 
 var goal = false;
 var currently_dead = false;
 var strMessage = "";
+var countdown = false;
 
 server.setOnEvent(onEvent);
 archipelagoHelper.setOnItemRecieved(onItem);
@@ -39,7 +38,7 @@ function onEvent(message) {
                 attemptLoot();
                 break;
             case '!hint':
-                archipelagoHelper.getHints();
+                archipelagoHelper.getHints(strMessage);
                 break;
             case '!deathlink':
                 deathLink(strMessage.substring(11));
@@ -51,9 +50,9 @@ function onEvent(message) {
 }
 
 function onItem(id, item, player, flags) {
-    if (!goal) {
+    if (!goal && countdown) {
         if (flags === 4) {
-            if (Math.random() < .8) { currently_dead = true; }
+            if (Math.random() < .6) { currently_dead = true; }
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
         }
         else if (flags === 1) {
@@ -63,7 +62,10 @@ function onItem(id, item, player, flags) {
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.SELF_FIND, { item: item }), false, false);
         }
         else {
-            if (item.match(/![a-z]*/) != null) { webhook.postInChat(`${item} - from ${player}`, false, false); }
+            if (item.match(/![a-z]*/) != null) {
+                webhook.postInChat(item, false, false);
+                webhook.postInChat(`That quote was found by ${player}`, false, false);
+            }
             else { webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: item, player: player }), false, false); }
             if (item.match(/FROG/) != null) { webhook.postInChat("And that's a frog fact.") }
         }
@@ -76,11 +78,21 @@ function onDeathLink(player, cause) {
 }
 
 function onCountdown(value) {
-    webhook.postInChat(`${value.replace("[Server]: ", "")}`, false, false);
+    if (value.match(/GO/) != null) {
+        countdown = true;
+        webhook.postInChat(`LETSAGO ${value.replace("[Server]: ", "")} LETSAGO`, false, false);
+    } else {
+        webhook.postInChat(`${value.replace("[Server]: ", "")}`, false, false);
+    }
 }
 function onHint(receiver, item, location, sender) {
-    let data = {receiver: receiver, item: item, location: location, sender: sender};
-    webhook.postInChat(messageUtil.generateRandomText(messageUtil.HINTED, data), false, false);
+    if (sender == "Chat") {
+        let data = { location: location, item: item, receiver: receiver };
+        webhook.postInChat(messageUtil.generateRandomText(messageUtil.HINTED, data), false, false);
+    } else {
+        webhook.postInChat(`I looked, and ${sender} is hoarding our ${item} in ${location}.`, false, false);
+        webhook.postInChat(`${location}? What the hell does that even mean? Is this even real?`, false, false);
+    }
 }
 
 let currentLocation;
@@ -93,7 +105,7 @@ function isInCooldown() {
 }
 
 function notifyCooldown() {
-    webhook.postInChat(messageUtil.generateRandomText(messageUtil.OFF_COOLDOWN))
+    if (countdown) { webhook.postInChat(messageUtil.generateRandomText(messageUtil.OFF_COOLDOWN)) }
 }
 
 function deathLink(player) {
@@ -101,7 +113,7 @@ function deathLink(player) {
     console.log(randAtk);
     let reason = `${player} met their ${messageUtil.getRandomIndex(randAtk)} by ${messageUtil.generateRandomText(messageUtil.KILLER)}!`
     webhook.postInChat(`Good luck everyone, @${reason}`, false, false);
-    currently_dead = true;
+    // currently_dead = true; // for testing
     if (currently_dead) {
         currently_dead = false;
         return archipelagoHelper.giveDeathLink(reason);
@@ -155,7 +167,8 @@ function attemptSearch() {
     if (searchAttempts >= config.gameSettings.searchAttemptsRequired && Math.random() < config.gameSettings.lootChance) {
         currentLocation = archipelagoHelper.getCheckableLocation();
         if (!currentLocation) {
-            webhook.postInChat("No available locations");
+            console.log("No more locations, exiting");
+            server.sayGoodBye();
         } else {
             lootAttemps = 0;
             searchAttempts = 0;

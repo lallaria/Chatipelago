@@ -56,9 +56,9 @@ let LOCATION_FOUND = loadJson('messages/locationFound.json');
 let ITEM_MISSED = loadJson('messages/itemMissed.json');
 let ITEM_FOUND = loadJson('messages/itemFound.json');
 let ITEM_RECIEVED = loadJson('messages/itemRecieved.json');
-let BOUNCED = loadJson('messages/bounced.json'); //deathlink
+let BOUNCED = loadJson('messages/bounced.json'); //deathlink get
 let ITEM_TRAP = loadJson('messages/itemTrap.json');
-let BOUNCE = loadJson('messages/bounce.json');
+let BOUNCE = loadJson('messages/bounce.json'); //deathlink send to everyone
 let KILLER = loadJson('messages/theKiller.json');
 let HINTED = loadJson("messages/hintedItem.json");
 

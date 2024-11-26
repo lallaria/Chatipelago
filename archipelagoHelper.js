@@ -61,7 +61,7 @@ client.items.on("itemsReceived", (items) => {
         const itemId = item.id;
         const itemFlags = item.flags;
         if (notifiedItems.includes(itemId)) continue;
-        notifiedItems.push(itemId);
+        if (Number(itemId) > 12000) { notifiedItems.push(itemId) }; // traps and filler get repeated randomly, might be a way to put a count on this instead
         messageUtil.saveItems(notifiedItems, fileName);
         console.log("Item received", item);
         onItemReceived(itemId, item.name, item.sender, itemFlags);
@@ -73,7 +73,7 @@ function loadCache() {
     {
         cacheLoaded = true;
         fileName = './saved/' + client.room.seedName + 'savedItems.json';
-        notifiedItems = messageUtil.loadItems(fileName); //need to make the filename related to the seedID
+        notifiedItems = messageUtil.loadItems(fileName);
     }
 }
 
@@ -127,7 +127,13 @@ function getItemNameByLocation(locationId) {
     return `${item.name} for ${item.receiver.name}`;
 }
 
-function getHints () {
+function getHints(message) {
+    if (message.match(/bbirbShiny/) != null) {
+        if (!isItemObtained(apWorld.ITEMS.KEY1)) { client.messages.say(`!hint ${apWorld.ITEMS.KEY1}`) }
+        if (!isItemObtained(apWorld.ITEMS.KEY2)) { client.messages.say(`!hint ${apWorld.ITEMS.KEY2}`) }
+        if (!isItemObtained(apWorld.ITEMS.KEY3)) { client.messages.say(`!hint ${apWorld.ITEMS.KEY3}`) }
+        break;
+    }
     for (const hint of client.items.hints){
         signalHint(hint);
     }
