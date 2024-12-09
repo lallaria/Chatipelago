@@ -132,7 +132,7 @@ function getHints(message) {
         if (!isItemObtained(apWorld.ITEMS.KEY1)) { client.messages.say(`!hint ${apWorld.ITEMS.KEY1}`) }
         if (!isItemObtained(apWorld.ITEMS.KEY2)) { client.messages.say(`!hint ${apWorld.ITEMS.KEY2}`) }
         if (!isItemObtained(apWorld.ITEMS.KEY3)) { client.messages.say(`!hint ${apWorld.ITEMS.KEY3}`) }
-        break;
+        return;
     }
     for (const hint of client.items.hints){
         signalHint(hint);
