@@ -24,27 +24,32 @@ const client = new archipelago.Client();
 
 // shenanigans to fix Error in Archipelago.js
 import {WebSocket} from "ws";
+import { defaultConnectionOptions } from './node_modules/archipelago.js/dist/index.js';
 
 global.WebSocket = WebSocket;
 client.options.debugLogVersions = false;
 
 let cacheLoaded;
+
+connect("");
+
 function connect(message) {
     let text = message + ""
     let conStrs = text.split(" ");
     let hostname = conStrs[1] || config.connectionInfo.hostname;
     let port = Number(conStrs[2]) || config.connectionInfo.port;
     let playerName = conStrs[3] || config.connectionInfo.playerName;
-    let tags = conStrs[4] || config.connectionInfo.tags;
-    let url = 'wss://' + hostname + ':' + port;
+    let tags = config.connectionInfo.tags;
+    let url = hostname + ':' + port;
     cacheLoaded = false;
-    client.login(url, playerName, apWorld.GAME_NAME).then(record => {
-        console.log("connected");
-        fillItemLocationMap();
-        client.updateTags(tags);
-    }).catch(error => {
-        console.error("Failed to connect:", error.message);
-    });
+    let options = defaultConnectionOptions;
+    options.tags = tags
+    console.log(`Connecting to ${url} as player ${playerName} with tags ${tags}`)
+    client.login(url, playerName, apWorld.GAME_NAME, options)
+        .then(record => {
+            fillItemLocationMap();
+            console.log("Connected to the Archipelago Server!")})
+        .catch(console.error);
 }
 
 let onItemReceived;

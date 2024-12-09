@@ -2,8 +2,13 @@ export {
     REQUIREMENTS,
     GOALS,
     GAME_NAME,
-    ITEMS
+    ITEMS,
+    VERSION
 }
+
+
+let GAME_NAME = "Chatipelago";
+let VERSION = { major: 0, minor: 5, build: 1, } ;
 
 // Only need to have locations and ids that will be used for requirements and goals
 class LOCATIONS {
@@ -25,8 +30,6 @@ class ITEMS {
     static KEY2 = 11491;
     static KEY3 = 11492;
 }
-
-let GAME_NAME = "Chatipelago";
 
 let REQUIREMENTS = {
     [LOCATIONS.PROG1]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],

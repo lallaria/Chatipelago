@@ -178,6 +178,5 @@ function attemptSearch() {
 }
 function onChatiConnect(message) {
     let text = message + ""
-    console.log(`Connecting to ${text.slice(14)}`);
     archipelagoHelper.connect(text);
 }

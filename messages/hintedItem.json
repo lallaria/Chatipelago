@@ -1,6 +1,6 @@
 [
-  "{location} is hiding bbirbShiny{item}bbirbShiny. We should get it as soon as we can for our friend {receiver} !search !loot bbirbGift",
-  "{location} has something shiny! It's bbirbShiny{item}bbirbShiny. Let's go that way because {receiver} needs it and we like them. !search !loot bbirbGift",
-  "{location} is calling to us, it has bbirbShiny{item}bbirbShiny. {receiver} is waiting for it because it's so cool! !search !loot bbirbGift",
-  "{location} seems like a pretty cool place. It's even cooler today because it has bbirbShiny{item}bbirbShiny. {receiver} put a tracking device on it, but they need us to find it! !search !loot bbirbGift"
+  "{location} is hiding bbirbShiny {item} bbirbShiny. We should get it as soon as we can for our friend {receiver} !search !loot bbirbGift",
+  "{location} has something shiny! It's bbirbShiny {item} bbirbShiny . Let's go that way because {receiver} needs it and we like them. !search !loot bbirbGift",
+  "{location} is calling to us, it has bbirbShiny {item} bbirbShiny . {receiver} is waiting for it because it's so cool! !search !loot bbirbGift",
+  "{location} seems like a pretty cool place. It's even cooler today because it has bbirbShiny {item} bbirbShiny . {receiver} put a tracking device on it, but they need us to find it! !search !loot bbirbGift"
 ]
