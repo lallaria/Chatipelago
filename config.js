@@ -11,12 +11,11 @@ const connectionInfo =
 	playerName: "Chat",
 	tags: ['AP','DeathLink'],
 }
-const webhookUrl = "https://WEBHOOK.URL"
+const webhookUrl = "http://WEBHOOK.URL"
 const gameSettings =
 {
 	searchAttemptsRequired: 5,
 	lootAttemptsRequired: 5,
 	lootChance: 0.7,
-	allowMultipleMessagesFromSameUser: false, // todo
 	checkCooldown: 240, // in seconds
 }

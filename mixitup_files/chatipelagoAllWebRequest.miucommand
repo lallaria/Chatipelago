@@ -5,7 +5,7 @@
   "Name": "Chati Connect",
   "Type": 1,
   "IsEnabled": true,
-  "Unlocked": true,
+  "Unlocked": false,
   "IsEmbedded": false,
   "GroupName": "Chatipelago",
   "Triggers": [ "chaticonnect" ],
@@ -68,16 +68,54 @@
   },
   "Actions": [
     {
+      "$type": "MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base",
+      "CaseSensitive": false,
+      "Operator": 0,
+      "RepeatWhileTrue": false,
+      "Clauses": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+          "ComparisionType": 0,
+          "Value1": "$chatiPort",
+          "Value2": "443",
+          "Value3": ""
+        }
+      ],
+      "CommandID": "00000000-0000-0000-0000-000000000000",
+      "Actions": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
+          "Url": "https://$chatiServerLoc/$message",
+          "ResponseType": 0,
+          "JSONToSpecialIdentifiers": null,
+          "Name": "Web Request",
+          "Type": 11,
+          "Enabled": true
+        },
+        {
+          "$type": "MixItUp.Base.Model.Actions.CommandActionModel, MixItUp.Base",
+          "ActionType": 9,
+          "CommandID": "00000000-0000-0000-0000-000000000000",
+          "PreMadeType": null,
+          "Arguments": null,
+          "WaitForCommandToFinish": false,
+          "IgnoreUsageRequirements": false,
+          "CommandGroupName": null,
+          "Name": "Command",
+          "Type": 20,
+          "Enabled": true
+        }
+      ],
+      "Name": "Conditional",
+      "Type": 17,
+      "Enabled": true
+    },
+    {
       "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
-      "Url": "https://chati.prismativerse.com/$message",
-      "ResponseType": 1,
-      "JSONToSpecialIdentifiers": {
-        "$type": "System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[System.String, mscorlib]], mscorlib",
-        "$host": "host",
-        "$port": "port",
-        "$name": "name"
-      },
-      "Name": "Send host host port name",
+      "Url": "http://$chatiServerLoc:$chatiPort/$message",
+      "ResponseType": 0,
+      "JSONToSpecialIdentifiers": null,
+      "Name": "Web Request",
       "Type": 11,
       "Enabled": true
     }

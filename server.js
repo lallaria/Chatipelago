@@ -1,7 +1,3 @@
-/*
-Needs to be able to connect to AP - it can be part of command line startup
-https://www.npmjs.com/package/archipelago.js
-*/
 import * as http from 'http';
 
 export { setOnEvent, sayGoodBye }

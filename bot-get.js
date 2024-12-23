@@ -43,6 +43,9 @@ function onEvent(message) {
             case '!deathlink':
                 deathLink(strMessage.substring(11));
                 break;
+            case '!turnchationdaddy':
+                countdown = true;
+                break;
             default:
                 break;
         }
@@ -50,7 +53,7 @@ function onEvent(message) {
 }
 
 function onItem(id, item, player, flags) {
-    if (!goal && countdown) {
+    if (countdown) {
         if (flags === 4) {
             if (Math.random() < .6) { currently_dead = true; }
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
@@ -64,7 +67,7 @@ function onItem(id, item, player, flags) {
         else {
             if (item.match(/![a-z]*/) != null) {
                 webhook.postInChat(item, false, false);
-                webhook.postInChat(`That quote was found by ${player}`, false, false);
+                webhook.postInChat(`That ${item} was found by ${player}`, false, false);
             }
             else { webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: item, player: player }), false, false); }
             if (item.match(/FROG/) != null) { webhook.postInChat("And that's a frog fact.") }
@@ -81,6 +84,8 @@ function onCountdown(value) {
     if (value.match(/GO/) != null) {
         countdown = true;
         webhook.postInChat(`LETSAGO ${value.replace("[Server]: ", "")} LETSAGO`, false, false);
+    } else if (value.match(/Starting/)) {
+        console.log(value);
     } else {
         webhook.postInChat(`${value.replace("[Server]: ", "")}`, false, false);
     }
@@ -97,7 +102,7 @@ function onHint(receiver, item, location, sender) {
 
 let currentLocation;
 let searchAttempts = 0;
-let lootAttemps = 0;
+let lootAttempts = 0;
 let lastCheckTime = new Date(0);
 
 function isInCooldown() {
@@ -109,7 +114,7 @@ function notifyCooldown() {
 }
 
 function deathLink(player) {
-    let randAtk = thesaurus.find("end");
+    let randAtk = thesaurus.find("demise");
     console.log(randAtk);
     let reason = `${player} met their ${messageUtil.getRandomIndex(randAtk)} by ${messageUtil.generateRandomText(messageUtil.KILLER)}!`
     webhook.postInChat(`Good luck everyone, @${reason}`, false, false);
@@ -125,20 +130,20 @@ function attemptLoot() {
     if (isInCooldown()) return;
     if (!currentLocation) {
         if (Math.random() < 0.2 && Math.random() < 0.2) {
-            webhook.postInChat("Blame @LMarioza, @Dranzior, and @DelilahIsDidi for this cooldown");
+            webhook.postInChat("Oooooh look! It's @LMarioza, @Dranzior, and @DelilahIsDidi! You can't loot them though, so you should \'!search\' first.");
         } else {
             webhook.postInChat("Ok, I'll open this cache of air. Nothing here, maybe you should use \'!search.\'");
         }
         return;
     }
-    lootAttemps++;
-    if (lootAttemps >= config.gameSettings.lootAttemptsRequired) {
+    lootAttempts++;
+    if (lootAttempts >= config.gameSettings.lootAttemptsRequired) {
         if (Math.random() < config.gameSettings.lootChance || lostIt) {
             lostIt = false;
             const triggeredLocation = currentLocation;
             currentLocation = undefined;
             lastCheckTime = new Date();
-            lootAttemps = 0;
+            lootAttempts = 0;
             searchAttempts = 0;
             archipelagoHelper.claimCheck(triggeredLocation);
             let itemName = archipelagoHelper.getItemNameByLocation(triggeredLocation);
@@ -153,7 +158,7 @@ function attemptLoot() {
             setTimeout(notifyCooldown, config.gameSettings.checkCooldown * 1000);
 
         } else {
-            lootAttemps = 0;
+            lootAttempts = 0;
             searchAttempts = 0;
             lostIt = true;
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_MISSED, {location: archipelagoHelper.getLocationName(currentLocation)}));
@@ -161,7 +166,8 @@ function attemptLoot() {
     }
 }
 
-function attemptSearch() {
+function attemptSearch(message) {
+    if (message.match(/on/)) { countdown = true; }
     if (isInCooldown()) return;
     searchAttempts++
     if (searchAttempts >= config.gameSettings.searchAttemptsRequired && Math.random() < config.gameSettings.lootChance) {
@@ -170,7 +176,7 @@ function attemptSearch() {
             console.log("No more locations, exiting");
             server.sayGoodBye();
         } else {
-            lootAttemps = 0;
+            lootAttempts = 0;
             searchAttempts = 0;
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, {location: archipelagoHelper.getLocationName(currentLocation)}));
         }
