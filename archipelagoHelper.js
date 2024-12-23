@@ -47,6 +47,7 @@ function connect(message) {
     console.log(`Connecting to ${url} as player ${playerName} with tags ${tags}`)
     client.login(url, playerName, apWorld.GAME_NAME, options)
         .then(record => {
+            //console.log(`Progressive items this seed: ${record[prog_items]}`)
             fillItemLocationMap();
             console.log("Connected to the Archipelago Server!")})
         .catch(console.error);
@@ -62,14 +63,15 @@ const locationItem = {};
 
 client.items.on("itemsReceived", (items) => {
     loadCache();    //make sure the cache is loaded before sending any item to chat
-    for (const item of items) {
-        const itemId = item.id;
-        const itemFlags = item.flags;
-        if (notifiedItems.includes(itemId)) continue;
-        if (Number(itemId) > 12000) { notifiedItems.push(itemId) }; // traps and filler get repeated randomly, might be a way to put a count on this instead
+    for (i of items) {
+        if (notifiedItems.includes(i.id)) continue;
+        if (Number(i.id) > 12400) {
+            notifiedItems.push(Number(i.id) + 100000);
+        } else {
+            notifiedItems.push(Number(i.id)) }
         messageUtil.saveItems(notifiedItems, fileName);
-        console.log("Item received", item);
-        onItemReceived(itemId, item.name, item.sender, itemFlags);
+        console.log(`ID ${i.id}, Name ${i.name}, Sender ${i.sender}, Flags ${i.flags}`);
+        onItemReceived(i.id, i.name, i.sender, i.flags);
     }
 })
 
@@ -92,7 +94,7 @@ client.messages.on("countdown", (message) => {
     onCountdown(message);
 })
 
-client.items.on("hintReceived", (hint) =>{
+client.items.on("hintReceived", (hint) => {
     console.log(hint);
     signalHint(hint);
 })

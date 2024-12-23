@@ -62,13 +62,13 @@ let BOUNCE = loadJson('messages/bounce.json'); //deathlink send to everyone
 let KILLER = loadJson('messages/theKiller.json');
 let HINTED = loadJson("messages/hintedItem.json");
 
-function myCallback() {
-    console.log("Saved");
+function myCallback(something) {
+    console.log(`Saved ${something}`);
 }
 
 function saveItems(collectedItems, filename) {
     var jsonItems = JSON.stringify(collectedItems);
-    fs.writeFile(filename, jsonItems, 'utf8', myCallback);
+    fs.writeFile(filename, jsonItems, 'utf8', myCallback(jsonItems));
 }
 
 function loadItems(filename) {
@@ -77,6 +77,7 @@ function loadItems(filename) {
         var json = JSON.parse(fs.readFileSync(filename, 'utf8'));
     } catch (err) {
         if (err.code === 'ENOENT') {
+            console.log("Empty")
             return itemList;
         } else {
             console.log(err);
