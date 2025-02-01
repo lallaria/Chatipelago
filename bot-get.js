@@ -53,7 +53,7 @@ function onEvent(message) {
 }
 
 function onItem(id, item, player, flags) {
-    if (countdown) {
+	//    if (countdown) {
         if (flags === 4) {
             if (Math.random() < .6) { currently_dead = true; }
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
@@ -72,7 +72,7 @@ function onItem(id, item, player, flags) {
             else { webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: item, player: player }), false, false); }
             if (item.match(/FROG/) != null) { webhook.postInChat("And that's a frog fact.") }
         }
-    }
+		//}
 }
 
 function onDeathLink(player, cause) {

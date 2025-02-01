@@ -61,14 +61,15 @@ let ITEM_TRAP = loadJson('messages/itemTrap.json');
 let BOUNCE = loadJson('messages/bounce.json'); //deathlink send to everyone
 let KILLER = loadJson('messages/theKiller.json');
 let HINTED = loadJson("messages/hintedItem.json");
+let jsonItems;
 
-function myCallback(something) {
-    console.log(`Saved ${something}`);
+function myCallback() {
+    console.log(`Saved ${jsonItems}`);
 }
 
 function saveItems(collectedItems, filename) {
-    var jsonItems = JSON.stringify(collectedItems);
-    fs.writeFile(filename, jsonItems, 'utf8', myCallback(jsonItems));
+    jsonItems = JSON.stringify(collectedItems);
+    fs.writeFile(filename, jsonItems, myCallback);
 }
 
 function loadItems(filename) {

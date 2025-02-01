@@ -63,7 +63,7 @@ const locationItem = {};
 
 client.items.on("itemsReceived", (items) => {
     loadCache();    //make sure the cache is loaded before sending any item to chat
-    for (i of items) {
+    for (let i of items) {
         if (notifiedItems.includes(i.id)) continue;
         if (Number(i.id) > 12400) {
             notifiedItems.push(Number(i.id) + 100000);
