@@ -12,7 +12,7 @@ import thesaurus from 'thesaurus';
 var goal = false;
 var currently_dead = false;
 var strMessage = "";
-var countdown = false;
+var countdown = true;
 
 server.setOnEvent(onEvent);
 archipelagoHelper.setOnItemRecieved(onItem);
@@ -53,26 +53,26 @@ function onEvent(message) {
 }
 
 function onItem(id, item, player, flags) {
-	//    if (countdown) {
-        if (flags === 4) {
-            if (Math.random() < .6) { currently_dead = true; }
-            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
-        }
-        else if (flags === 1) {
-            webhook.postInChat(`bbirbShiny ${player} found us ${item}, it's really important. bbirbShiny`, false, false);
-        }
-        else if (player === "Chat") {
-            webhook.postInChat(messageUtil.generateRandomText(messageUtil.SELF_FIND, { item: item }), false, false);
-        }
-        else {
-            if (item.match(/![a-z]*/) != null) {
-                webhook.postInChat(item, false, false);
-                webhook.postInChat(`That ${item} was found by ${player}`, false, false);
-            }
-            else { webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: item, player: player }), false, false); }
-            if (item.match(/FROG/) != null) { webhook.postInChat("And that's a frog fact.") }
-        }
-		//}
+	if (countdown) {
+        	if (flags === 4) {
+	            if (Math.random() < 0.6) { currently_dead = true; }
+	            webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
+        	}
+	        else if (flags === 1) {
+        	    webhook.postInChat(`bbirbShiny ${player} found us ${item}, it's really important. bbirbShiny`, false, false);
+	        }
+	        else if (player === "Chat") {
+	            webhook.postInChat(messageUtil.generateRandomText(messageUtil.SELF_FIND, { item: item }), false, false);
+	        }
+	        else {
+	            if (item.match(/![a-z]*/) != null) {
+	                webhook.postInChat(item, false, false);
+	                webhook.postInChat(`That ${item} was found by ${player}`, false, false);
+	            }
+	            else { webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_RECIEVED, { item: item, player: player }), false, false); }
+	            if (item.match(/FROG/) != null) { webhook.postInChat("And that's a frog fact.") }
+	        }
+	}
 }
 
 function onDeathLink(player, cause) {
@@ -81,6 +81,10 @@ function onDeathLink(player, cause) {
 }
 
 function onCountdown(value) {
+    if (value.match(/TRUE/) != null) {
+	countdown = true;
+        return;
+    }
     if (value.match(/GO/) != null) {
         countdown = true;
         webhook.postInChat(`LETSAGO ${value.replace("[Server]: ", "")} LETSAGO`, false, false);
@@ -90,6 +94,7 @@ function onCountdown(value) {
         webhook.postInChat(`${value.replace("[Server]: ", "")}`, false, false);
     }
 }
+
 function onHint(receiver, item, location, sender) {
     if (sender == "Chat") {
         let data = { location: location, item: item, receiver: receiver };
@@ -172,7 +177,9 @@ function attemptSearch(message) {
     if (searchAttempts >= config.gameSettings.searchAttemptsRequired && Math.random() < config.gameSettings.lootChance) {
         currentLocation = archipelagoHelper.getCheckableLocation();
         if (!currentLocation) {
-            console.log("No more locations, exiting");
+            webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, { location: "bbirbComfy Home bbirbHug" }));
+	    webhook.postInChat("Chat, we've been everywhere, found everything, and there's nothing more to loot. Great job friends, thanks for playing Chatipelago with us bbirbLove");
+	    console.log("No more locations, exiting");
             server.sayGoodBye();
         } else {
             lootAttempts = 0;

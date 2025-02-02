@@ -63,6 +63,7 @@ const locationItem = {};
 
 client.items.on("itemsReceived", (items) => {
     loadCache();    //make sure the cache is loaded before sending any item to chat
+    if (notifiedItems.includes(696969)){ onCountdown("TRUE"); }
     for (let i of items) {
         if (notifiedItems.includes(i.id)) continue;
         if (Number(i.id) > 12400) {
@@ -92,7 +93,16 @@ client.deathLink.on("deathReceived", (source, time, cause) => {
 client.messages.on("countdown", (message) => {
     console.log(message);
     onCountdown(message);
+    loadCache();    //make sure the cache is loaded
+    if (notifiedItems.includes(696969)){
+        return;
+    } else {
+    	notifiedItems.push(696969)
+        messageUtil.saveItems(notifiedItems, fileName);
+        console.log("Saving countdown status");
+    }
 })
+
 
 client.items.on("hintReceived", (hint) => {
     console.log(hint);
