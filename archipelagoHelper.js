@@ -128,8 +128,6 @@ function checkGoal(lastLocation) {
 }
 
 function fillItemLocationMap() {
-    if (Object.entries(locationItem).length > 0)
-        return
     // scout all locations to map items locations
     client.scout(client.room.allLocations, 0).then(items => {
         items?.forEach(item => {
