@@ -1,0 +1,48 @@
+export {
+    REQUIREMENTS,
+    GOALS,
+    GAME_NAME,
+    ITEMS,
+    VERSION
+}
+
+
+let GAME_NAME = "Chatipelago";
+let VERSION = { major: 0, minor: 5, build: 1, } ;
+
+// Only need to have locations and ids that will be used for requirements and goals
+class LOCATIONS {
+    static PROG1 = 600;
+    static PROG2 = 601;
+    static PROG3 = 602;
+    static PROG4 = 603;
+    static PROG5 = 604;
+    static PROG6 = 605;
+    static PROG7 = 606;
+    static PROG8 = 607;
+    static PROG9 = 608;
+    static PROG10 = 609;
+}
+
+// Only need to have items and ids that will be used for requirements
+class ITEMS {
+    static KEY1 = 11490;
+    static KEY2 = 11491;
+    static KEY3 = 11492;
+}
+
+let REQUIREMENTS = {
+    [LOCATIONS.PROG1]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+    [LOCATIONS.PROG2]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+    [LOCATIONS.PROG3]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+    [LOCATIONS.PROG4]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+    [LOCATIONS.PROG5]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+    [LOCATIONS.PROG6]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+    [LOCATIONS.PROG7]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+    [LOCATIONS.PROG8]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+    [LOCATIONS.PROG9]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+    [LOCATIONS.PROG10]: [ITEMS.KEY1, ITEMS.KEY2, ITEMS.KEY3],
+}
+
+let GOALS = [LOCATIONS.PROG1, LOCATIONS.PROG2, LOCATIONS.PROG3, LOCATIONS.PROG4, LOCATIONS.PROG5,
+    LOCATIONS.PROG6, LOCATIONS.PROG7, LOCATIONS.PROG8, LOCATIONS.PROG9, LOCATIONS.PROG10]

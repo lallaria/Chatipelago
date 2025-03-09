@@ -1,25 +1,26 @@
-/*
-Needs to be able to connect to AP - it can be part of command line startup
-https://www.npmjs.com/package/archipelago.js
+import * as http from 'http';
 
-*/
+export { setOnEvent, sayGoodBye }
 
 var onEvent;
 
-module.exports = {
-    setOnEvent: function (fct) {
-        onEvent = fct;
-    }
+function setOnEvent(fct) {
+    onEvent = fct;
 }
+
+function sayGoodBye() {
+    process.exit();
+}
+
 'use strict';
-var http = require('http');
+
 var port = process.env.PORT || 1337;
 
 http.createServer(function (req, res) {
     onEvent(req.url);
 
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Hello World\n');
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end('Hello, World\n');
 }).listen(port);
 
-var bot = require('./bot-get.js');
+import './bot-get.js'

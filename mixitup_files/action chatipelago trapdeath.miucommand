@@ -4,7 +4,7 @@
   "Name": "Choose Trapped Player",
   "Type": 4,
   "IsEnabled": true,
-  "Unlocked": true,
+  "Unlocked": false,
   "IsEmbedded": false,
   "GroupName": "Chatipelago",
   "Triggers": [],
@@ -38,17 +38,68 @@
       "MakeGloballyUsable": false,
       "ShouldProcessMath": false,
       "ReplaceSpecialIdentifiersInFunctions": false,
-      "Name": "Construct command for Chati",
+      "Name": "Construct a command for Chati",
       "Type": 12,
       "Enabled": true
     },
     {
-      "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
-      "Url": "https://chati.prismativerse.com/$message",
-      "ResponseType": 0,
-      "JSONToSpecialIdentifiers": null,
-      "Name": "Send deathlink command to Chati",
-      "Type": 11,
+      "$type": "MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base",
+      "CaseSensitive": false,
+      "Operator": 0,
+      "RepeatWhileTrue": false,
+      "Clauses": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+          "ComparisionType": 0,
+          "Value1": "$chatiPort",
+          "Value2": "443",
+          "Value3": ""
+        }
+      ],
+      "CommandID": "00000000-0000-0000-0000-000000000000",
+      "Actions": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
+          "Url": "https://$chatiServerLoc/$message",
+          "ResponseType": 0,
+          "JSONToSpecialIdentifiers": null,
+          "Name": "Web Request",
+          "Type": 11,
+          "Enabled": true
+        }
+      ],
+      "Name": "Send Command with name to ChatiSSL",
+      "Type": 17,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base",
+      "CaseSensitive": false,
+      "Operator": 0,
+      "RepeatWhileTrue": false,
+      "Clauses": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+          "ComparisionType": 1,
+          "Value1": "$chatiPort",
+          "Value2": "443",
+          "Value3": ""
+        }
+      ],
+      "CommandID": "00000000-0000-0000-0000-000000000000",
+      "Actions": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
+          "Url": "http://$chatiServerLoc:$chatiPort/$message",
+          "ResponseType": 0,
+          "JSONToSpecialIdentifiers": null,
+          "Name": "Web Request",
+          "Type": 11,
+          "Enabled": true
+        }
+      ],
+      "Name": "Send Command with name to Chati",
+      "Type": 17,
       "Enabled": true
     },
     {
@@ -56,8 +107,8 @@
       "ActionType": 0,
       "PreMadeType": null,
       "Arguments": null,
-      "WaitForCommandToFinish": true,
-      "IgnoreUsageRequirements": true,
+      "WaitForCommandToFinish": false,
+      "IgnoreUsageRequirements": false,
       "CommandGroupName": null,
       "Name": "Clear Queue",
       "Type": 20,
@@ -79,16 +130,6 @@
       "Name": "Timeout Chosen User",
       "Type": 22,
       "Enabled": true
-    },
-    {
-      "$type": "MixItUp.Base.Model.Actions.ChatActionModel, MixItUp.Base",
-      "ChatText": "@$scriptresult was fake timed out because I can",
-      "SendAsStreamer": true,
-      "IsWhisper": false,
-      "WhisperUserName": null,
-      "Name": "Fake Timeout for Debug",
-      "Type": 1,
-      "Enabled": false
     }
   ]
 }
