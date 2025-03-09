@@ -1,17 +1,28 @@
 {
   "name": "chatipelago",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Chatipelago",
   "main": "server.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/lallaria/Chatipelago.git"
+  },
   "author": {
     "name": "DelilahIsDidi Dranzior LMarioza"
   },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lallaria/Chatipelago/issues"
+  },
+  "homepage": "https://github.com/lallaria/Chatipelago#readme",
   "devDependencies": {
     "eslint": "^8.57.1"
   },
   "eslintConfig": {},
   "dependencies": {
-    "archipelago.js": "=1.1.0",
+    "archipelago.js": "^2.0.4",
+    "ws": "^8.18.0",
     "thesaurus": "^0.0.1"
   }
 }

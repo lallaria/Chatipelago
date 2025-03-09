@@ -49,12 +49,63 @@
   },
   "Actions": [
     {
-      "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
-      "Url": "https://chati.prismativerse.com/$message",
-      "ResponseType": 0,
-      "JSONToSpecialIdentifiers": null,
+      "$type": "MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base",
+      "CaseSensitive": false,
+      "Operator": 0,
+      "RepeatWhileTrue": false,
+      "Clauses": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+          "ComparisionType": 0,
+          "Value1": "$chatiPort",
+          "Value2": "443",
+          "Value3": ""
+        }
+      ],
+      "CommandID": "00000000-0000-0000-0000-000000000000",
+      "Actions": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
+          "Url": "https://$chatiServerLoc/$message",
+          "ResponseType": 0,
+          "JSONToSpecialIdentifiers": null,
+          "Name": "Web Request",
+          "Type": 11,
+          "Enabled": true
+        }
+      ],
+      "Name": "Send !loot to Chati ServerSSL",
+      "Type": 17,
+      "Enabled": true
+    },
+    {
+      "$type": "MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base",
+      "CaseSensitive": false,
+      "Operator": 0,
+      "RepeatWhileTrue": false,
+      "Clauses": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+          "ComparisionType": 1,
+          "Value1": "$chatiPort",
+          "Value2": "443",
+          "Value3": ""
+        }
+      ],
+      "CommandID": "00000000-0000-0000-0000-000000000000",
+      "Actions": [
+        {
+          "$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
+          "Url": "http://$chatiServerLoc:$chatiPort/$message",
+          "ResponseType": 0,
+          "JSONToSpecialIdentifiers": null,
+          "Name": "Web Request",
+          "Type": 11,
+          "Enabled": true
+        }
+      ],
       "Name": "Send !loot to Chati Server",
-      "Type": 11,
+      "Type": 17,
       "Enabled": true
     },
     {

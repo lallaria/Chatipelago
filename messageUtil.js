@@ -1,5 +1,28 @@
-var fs = require('fs');
-const { exit } = require('process');
+import * as fs from 'fs';
+import exit from 'process';
+
+export {
+    generateRandomText,
+    loadItems,
+    saveItems,
+    getRandomIndex,
+    SELF_FIND,
+    OFF_COOLDOWN,
+    LOCATION_FOUND,
+    ITEM_MISSED,
+    ITEM_FOUND,
+    ITEM_RECIEVED,
+    BOUNCED,
+    ITEM_TRAP,
+    BOUNCE,
+    KILLER,
+    HINTED
+}
+
+function getRandomIndex(textList) {
+    var randomPick = Math.floor(Math.random() * textList.length);
+    return textList[randomPick];
+}
 
 function loadJson(filename) {
     var json = JSON.parse(fs.readFileSync(filename, 'utf8'));
@@ -12,64 +35,64 @@ function loadJson(filename) {
     return messageList;
 }
 
+function generateRandomText(textList, variables) {
+    var text = getRandomIndex(textList);
+
+    if (variables != null) {
+        var keys = Object.keys(variables);
+        for (var i = 0; i < keys.length; ++i) {
+            var key = keys[i];
+            var value = variables[keys[i]];
+            text = text.replace(`{${key}}`, value);
+        }
+    }
+
+    return text;
+}
+
+let SELF_FIND = loadJson('messages/selfFind.json');
+let OFF_COOLDOWN = loadJson('messages/offCooldown.json');
+let LOCATION_FOUND = loadJson('messages/locationFound.json');
+let ITEM_MISSED = loadJson('messages/itemMissed.json');
+let ITEM_FOUND = loadJson('messages/itemFound.json');
+let ITEM_RECIEVED = loadJson('messages/itemRecieved.json');
+let BOUNCED = loadJson('messages/bounced.json'); //deathlink get
+let ITEM_TRAP = loadJson('messages/itemTrap.json');
+let BOUNCE = loadJson('messages/bounce.json'); //deathlink send to everyone
+let KILLER = loadJson('messages/theKiller.json');
+let HINTED = loadJson("messages/hintedItem.json");
+let jsonItems;
+
 function myCallback() {
-    console.log("Saved");
+    console.log(`Saved ${jsonItems}`);
 }
 
-module.exports = {
-    saveItems: function (collectedItems, filename) {
-        var jsonItems = JSON.stringify(collectedItems);
-        fs.writeFile(filename, jsonItems, 'utf8', myCallback);
-    },
-
-    loadItems: function (filename) {
-        var itemList = [];
-        try {
-            var json = JSON.parse(fs.readFileSync(filename, 'utf8'));
-        } catch (err) {
-            if (err.code === 'ENOENT') {
-                return itemList;
-            }
-            else {
-                console.log(err);
-                exit();
-            }
-        }
-
-        for (var i = 0; i < json.length; ++i) {
-            itemList[i] = json[i];
-        }
-
-        return itemList;
-    },
-
-    generateRandomText: function (textList, variables) {
-        var text = this.getRandomIndex(textList);
-
-        if (variables != null) {
-            var keys = Object.keys(variables);
-            for (var i = 0; i < keys.length; ++i) {
-                var key = keys[i];
-                var value = variables[keys[i]];
-                text = text.replace(`{${key}}`, value);
-            }
-        }
-        
-        return text;
-    },
-    getRandomIndex: function (textList) {
-        var randomPick = Math.floor(Math.random() * textList.length);
-        return textList[randomPick];
-    },
-
-    SELF_FIND: loadJson('messages/selfFind.json'),
-    OFF_COOLDOWN: loadJson('messages/offCooldown.json'),
-    LOCATION_FOUND: loadJson('messages/locationFound.json'),
-    ITEM_MISSED: loadJson('messages/itemMissed.json'),
-    ITEM_FOUND: loadJson('messages/itemFound.json'),
-    ITEM_RECIEVED: loadJson('messages/itemRecieved.json'),
-    BOUNCED: loadJson('messages/bounced.json'), //deathlink
-    ITEM_TRAP: loadJson('messages/itemTrap.json'),
-    BOUNCE: loadJson('messages/bounce.json'),
-    KILLER: loadJson('messages/theKiller.json')
+function saveItems(collectedItems, filename) {
+    jsonItems = JSON.stringify(collectedItems);
+    fs.writeFile(filename, jsonItems, myCallback);
 }
+
+function loadItems(filename) {
+    var itemList = [];
+    try {
+        var json = JSON.parse(fs.readFileSync(filename, 'utf8'));
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            console.log("Empty")
+            return itemList;
+        } else {
+            console.log(err);
+            exit();
+        }
+    }
+
+    for (var i = 0; i < json.length; ++i) {
+        itemList[i] = json[i];
+    }
+
+    return itemList;
+}
+
+
+
+
