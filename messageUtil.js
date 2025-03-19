@@ -50,17 +50,17 @@ function generateRandomText(textList, variables) {
     return text;
 }
 
-let SELF_FIND = loadJson('messages/selfFind.json');
-let OFF_COOLDOWN = loadJson('messages/offCooldown.json');
-let LOCATION_FOUND = loadJson('messages/locationFound.json');
-let ITEM_MISSED = loadJson('messages/itemMissed.json');
-let ITEM_FOUND = loadJson('messages/itemFound.json');
-let ITEM_RECIEVED = loadJson('messages/itemRecieved.json');
-let BOUNCED = loadJson('messages/bounced.json'); //deathlink get
-let ITEM_TRAP = loadJson('messages/itemTrap.json');
-let BOUNCE = loadJson('messages/bounce.json'); //deathlink send to everyone
-let KILLER = loadJson('messages/theKiller.json');
-let HINTED = loadJson("messages/hintedItem.json");
+let SELF_FIND = loadJson('customConfig/messages/selfFind.json');
+let OFF_COOLDOWN = loadJson('customConfig/messages/offCooldown.json');
+let LOCATION_FOUND = loadJson('customConfig/messages/locationFound.json');
+let ITEM_MISSED = loadJson('customConfig/messages/itemMissed.json');
+let ITEM_FOUND = loadJson('customConfig/messages/itemFound.json');
+let ITEM_RECIEVED = loadJson('customConfig/messages/itemRecieved.json');
+let BOUNCED = loadJson('customConfig/messages/bounced.json'); //deathlink get
+let ITEM_TRAP = loadJson('customConfig/messages/itemTrap.json');
+let BOUNCE = loadJson('customConfig/messages/bounce.json'); //deathlink send to everyone
+let KILLER = loadJson('customConfig/messages/theKiller.json');
+let HINTED = loadJson("customConfig/messages/hintedItem.json");
 let jsonItems;
 
 function myCallback() {
