@@ -1,21 +1,12 @@
+import fs from "fs";
+
 export {
 	connectionInfo,
 	webhookUrl,
 	gameSettings
 }
+let config = JSON.parse(fs.readFileSync('customConfig/config.json', 'utf8'));
 
-const connectionInfo = 
-{
-	hostname: "localhost",
-	port: 38281,
-	playerName: "Chat",
-	tags: ['AP','DeathLink'],
-}
-const webhookUrl = "http://WEBHOOK.URL"
-const gameSettings =
-{
-	searchAttemptsRequired: 5,
-	lootAttemptsRequired: 5,
-	lootChance: 0.7,
-	checkCooldown: 240, // in seconds
-}
+const connectionInfo = config["connectionInfo"];
+const webhookUrl = config["webhookUrl"];
+const gameSettings = config["gameSettings"];

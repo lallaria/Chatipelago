@@ -1,0 +1,16 @@
+{
+	"connectionInfo": {
+		"hostname": "localhost",
+		"port": 38281,
+		"playerName": "Chat",
+		"tags": ["AP","DeathLink"]
+	},
+	"webhookUrl": "",
+	"gameSettings":
+	{
+		"searchAttemptsRequired": 5,
+		"lootAttemptsRequired": 5,
+		"lootChance": 0.7,
+		"checkCooldown": 240
+	}
+}
