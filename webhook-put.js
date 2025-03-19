@@ -28,6 +28,6 @@ function post(message, url, trap, bounced) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify(content)
-    });
+    }).catch(function(err) { console.log(err.message); });
 
 }
