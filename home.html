@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<body>
+host: <input type="text" id="hostInput"/><br>
+port:<input type="text" id="portInput"/><br>
+playerName:<input type="text" id="nameInput"/><br>
+<button id="connectBtn">Connect</button><br>
+<br>
+<button id="searchBtn">Search</button>
+<button id="lootBtn">Loot</button>
+<script>
+var searchBtn = document.getElementById('searchBtn')
+searchBtn.addEventListener('click', function(){
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", '/!search')
+	xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+	xhr.send("message=dd");
+});
+
+var lootBtn = document.getElementById('lootBtn')
+lootBtn.addEventListener('click', function(){
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", '/!loot')
+	xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+	xhr.send("message=dd");
+});
+
+var connectBtn = document.getElementById('connectBtn')
+connectBtn.addEventListener('click', function(){
+    var hostname = document.getElementById('hostInput').value;
+    var port = document.getElementById('portInput').value;
+    var name = document.getElementById('nameInput').value;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", '/!chaticonnect+'+hostname+'+'+port+'+'+name);
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    xhr.send("message=dd");
+});
+</script>
+
+</body>
+</html>
