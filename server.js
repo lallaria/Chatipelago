@@ -15,6 +15,7 @@ function sayGoodBye() {
 
 'use strict';
 
+//Create server
 var port = process.env.PORT || 1337;
 
 http.createServer(function (req, res) {

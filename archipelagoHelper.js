@@ -31,8 +31,6 @@ client.options.debugLogVersions = false;
 
 let cacheLoaded;
 
-connect("");
-
 function connect(message) {
     let text = message + ""
     let conStrs = text.split(" ");
