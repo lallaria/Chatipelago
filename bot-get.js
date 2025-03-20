@@ -9,16 +9,23 @@ import * as config from './config.js';
 import * as messageUtil from './messageUtil.js';
 import thesaurus from 'thesaurus';
 
+export {init}
+
 var goal = false;
 var currently_dead = false;
 var strMessage = "";
 var countdown = true;
 
-server.setOnEvent(onEvent);
-archipelagoHelper.setOnItemRecieved(onItem);
-archipelagoHelper.setOnCountdown(onCountdown);
-archipelagoHelper.setOnDeathLink(onDeathLink);
-archipelagoHelper.setOnHints(onHint);
+function init() {
+    server.setOnEvent(onEvent);
+    archipelagoHelper.setOnItemRecieved(onItem);
+    archipelagoHelper.setOnCountdown(onCountdown);
+    archipelagoHelper.setOnDeathLink(onDeathLink);
+    archipelagoHelper.setOnHints(onHint);
+
+    config.loadFiles();
+    messageUtil.loadFiles();
+}
 
 function onEvent(message) {
     strMessage = message.replace('/', "");
@@ -188,6 +195,7 @@ function attemptSearch(message) {
         }
     }
 }
+
 function onChatiConnect(message) {
     let text = message + ""
     archipelagoHelper.connect(text);
