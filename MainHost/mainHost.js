@@ -4,7 +4,7 @@ import fs from "fs";
 
 'use strict';
 
-var port = process.env.PORT || 80;
+var port = process.env.PORT || 1337;
 
 docker.buildDocker()
 

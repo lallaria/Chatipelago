@@ -78,7 +78,7 @@ function loadCache() {
     if (!cacheLoaded)
     {
         cacheLoaded = true;
-        fileName = './saved/' + client.room.seedName + 'savedItems.json';
+        fileName = './saved/' + client.room.seedName + client.name + 'savedItems.json';
         notifiedItems = messageUtil.loadItems(fileName);
     }
 }
