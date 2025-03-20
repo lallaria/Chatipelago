@@ -1,5 +1,7 @@
 import * as http from 'http';
 import fs from 'fs';
+import decompress from 'decompress';
+import * as bot from './bot-get.js'
 
 export { setOnEvent, sayGoodBye }
 
@@ -33,4 +35,12 @@ http.createServer(function (req, res) {
     }
 }).listen(port);
 
-import './bot-get.js'
+//extract config Files
+let promise = decompress("config.chaticonfig", "./customConfig/")
+    .then((files)=>{
+    }).catch((err)=>{
+        console.log(err);
+    }).finally(()=>{
+        bot.init();
+        //delete the file? (hopefully work)
+    });

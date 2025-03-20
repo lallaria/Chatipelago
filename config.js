@@ -1,12 +1,20 @@
 import fs from "fs";
 
 export {
+	loadFiles,
 	connectionInfo,
 	webhookUrl,
 	gameSettings
 }
-let config = JSON.parse(fs.readFileSync('customConfig/config.json', 'utf8'));
 
-const connectionInfo = config["connectionInfo"];
-const webhookUrl = config["webhookUrl"];
-const gameSettings = config["gameSettings"];
+let connectionInfo = {};
+let webhookUrl = {};
+let gameSettings = {};
+
+function loadFiles(){
+	let config = JSON.parse(fs.readFileSync('customConfig/config.json', 'utf8'));
+	connectionInfo = config["connectionInfo"];
+	webhookUrl = config["webhookUrl"];
+	gameSettings = config["gameSettings"];
+}
+

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import exit from 'process';
 
 export {
+    loadFiles,
     generateRandomText,
     loadItems,
     saveItems,
@@ -25,20 +26,27 @@ function getRandomIndex(textList) {
 }
 
 function loadJson(filename) {
-    var json = JSON.parse(fs.readFileSync(filename, 'utf8'));
-    var messageList = [];
+    try {
+        var json = JSON.parse(fs.readFileSync(filename, 'utf8'));
 
-    for (var i = 0; i < json.length; ++i) {
-        messageList[i] = json[i];
+        var messageList = [];
+
+        for (var i = 0; i < json.length; ++i) {
+            messageList[i] = json[i];
+        }
+
+        return messageList;
+    } catch (e) {
+        console.error(`error loading json Array from file ${filename}`);
+        console.error(e);
+        return [];
     }
-
-    return messageList;
 }
 
 function generateRandomText(textList, variables) {
     var text = getRandomIndex(textList);
 
-    if (variables != null) {
+    if (variables != null && text != null) {
         var keys = Object.keys(variables);
         for (var i = 0; i < keys.length; ++i) {
             var key = keys[i];
@@ -50,18 +58,32 @@ function generateRandomText(textList, variables) {
     return text;
 }
 
-let SELF_FIND = loadJson('customConfig/messages/selfFind.json');
-let OFF_COOLDOWN = loadJson('customConfig/messages/offCooldown.json');
-let LOCATION_FOUND = loadJson('customConfig/messages/locationFound.json');
-let ITEM_MISSED = loadJson('customConfig/messages/itemMissed.json');
-let ITEM_FOUND = loadJson('customConfig/messages/itemFound.json');
-let ITEM_RECIEVED = loadJson('customConfig/messages/itemRecieved.json');
-let BOUNCED = loadJson('customConfig/messages/bounced.json'); //deathlink get
-let ITEM_TRAP = loadJson('customConfig/messages/itemTrap.json');
-let BOUNCE = loadJson('customConfig/messages/bounce.json'); //deathlink send to everyone
-let KILLER = loadJson('customConfig/messages/theKiller.json');
-let HINTED = loadJson("customConfig/messages/hintedItem.json");
+let SELF_FIND = [];
+let OFF_COOLDOWN = [];
+let LOCATION_FOUND = [];
+let ITEM_MISSED = [];
+let ITEM_FOUND = [];
+let ITEM_RECIEVED = [];
+let BOUNCED = [];
+let ITEM_TRAP = [];
+let BOUNCE = [];
+let KILLER = [];
+let HINTED = [];
 let jsonItems;
+
+function loadFiles() {
+    SELF_FIND = loadJson('customConfig/messages/selfFind.json');
+    OFF_COOLDOWN = loadJson('customConfig/messages/offCooldown.json');
+    LOCATION_FOUND = loadJson('customConfig/messages/locationFound.json');
+    ITEM_MISSED = loadJson('customConfig/messages/itemMissed.json');
+    ITEM_FOUND = loadJson('customConfig/messages/itemFound.json');
+    ITEM_RECIEVED = loadJson('customConfig/messages/itemRecieved.json');
+    BOUNCED = loadJson('customConfig/messages/bounced.json'); //deathlink get
+    ITEM_TRAP = loadJson('customConfig/messages/itemTrap.json');
+    BOUNCE = loadJson('customConfig/messages/bounce.json'); //deathlink send to everyone
+    KILLER = loadJson('customConfig/messages/theKiller.json');
+    HINTED = loadJson("customConfig/messages/hintedItem.json");
+}
 
 function myCallback() {
     console.log(`Saved ${jsonItems}`);
