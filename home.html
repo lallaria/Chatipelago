@@ -31,7 +31,14 @@ connectBtn.addEventListener('click', function(){
     var port = document.getElementById('portInput').value;
     var name = document.getElementById('nameInput').value;
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", '/!chaticonnect+'+hostname+'+'+port+'+'+name);
+
+    if (hostname !== '') {
+        xhr.open("POST", '/!chaticonnect+'+hostname+'+'+port+'+'+name);
+    }
+    else {
+        xhr.open("POST", '/!chaticonnect');
+    }
+
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     xhr.send("message=dd");
 });
