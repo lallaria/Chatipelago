@@ -100,7 +100,7 @@ function onHint(receiver, item, location, sender) {
         let data = { location: location, item: item, receiver: receiver };
         webhook.postInChat(messageUtil.generateRandomText(messageUtil.HINTED, data), false, false);
     } else {
-        webhook.postInChat(`I looked, and ${sender} is hoarding our ${item} in ${location}.`, false, false);
+        webhook.postInChat(`I looked, and ${sender} is hoarding ${item} in ${location}.`, false, false);
         webhook.postInChat(`${location}? What the hell does that even mean? Is this even real?`, false, false);
     }
 }
@@ -160,7 +160,14 @@ function attemptLoot() {
                 webhook.postInChat('You did it Chat! You completed your goal!');
                 goal = true;
             }
-            setTimeout(notifyCooldown, config.gameSettings.checkCooldown * 1000);
+            if (archipelagoHelper.anyLocationsLeft){
+		setTimeout(notifyCooldown, config.gameSettings.checkCooldown * 1000);
+	    } else { 
+	        webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, { location: "bbirbComfy Home bbirbHug" }));
+                webhook.postInChat("Chat, we've been everywhere, found everything, and there's nothing more to loot. Great job friends, thanks for playing Chatipelago with us bbirbLove");
+                console.log("No more locations, exiting");
+                setTimeout(server.sayGoodBye, 10000); 
+	    }
 
         } else {
             lootAttempts = 0;
@@ -177,11 +184,8 @@ function attemptSearch(message) {
     if (searchAttempts >= config.gameSettings.searchAttemptsRequired && Math.random() < config.gameSettings.lootChance) {
         currentLocation = archipelagoHelper.getCheckableLocation();
         if (!currentLocation) {
-            webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, { location: "bbirbComfy Home bbirbHug" }));
-	    webhook.postInChat("Chat, we've been everywhere, found everything, and there's nothing more to loot. Great job friends, thanks for playing Chatipelago with us bbirbLove");
-	    console.log("No more locations, exiting");
-            server.sayGoodBye();
-        } else {
+	    webhook.postInChat("Whooooa Chat, you've cleared out all of your available checks! I know BK is the favorite around here, but how about a $6 sub to pass the time?");
+	} else {
             lootAttempts = 0;
             searchAttempts = 0;
             webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, { location: archipelagoHelper.getLocationName(currentLocation) }));
