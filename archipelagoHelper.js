@@ -169,6 +169,7 @@ function getCheckableLocation() {
 function anyLocationsLeft() {
     const locations = client.room.missingLocations
     return locations.length > 0
+}
 
 function isItemObtained(itemId) {
     return client.items.received.some(item => item.id === itemId);
