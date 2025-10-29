@@ -1,21 +1,20 @@
+import fs from "fs";
+
 export {
+	loadFiles,
 	connectionInfo,
 	webhookUrl,
 	gameSettings
 }
 
-const connectionInfo = 
-{
-	hostname: "localhost",
-	port: 38281,
-	playerName: "Chat",
-	tags: ['AP','DeathLink'],
+let connectionInfo = {};
+let webhookUrl = {};
+let gameSettings = {};
+
+function loadFiles(){
+	let config = JSON.parse(fs.readFileSync('customConfig/config.json', 'utf8'));
+	connectionInfo = config["connectionInfo"];
+	webhookUrl = config["webhookUrl"];
+	gameSettings = config["gameSettings"];
 }
-const webhookUrl = "http://WEBHOOK.URL"
-const gameSettings =
-{
-	searchAttemptsRequired: 5,
-	lootAttemptsRequired: 5,
-	lootChance: 0.7,
-	checkCooldown: 240, // in seconds
-}
+
