@@ -1,13 +1,25 @@
 {
+	"mixitup": false,
+	"streamerbot": true,
 	"connectionInfo": {
 		"hostname": "localhost",
 		"port": 38281,
 		"playerName": "Chat",
-		"tags": ["AP","DeathLink"]
+		"tags": [ "AP", "DeathLink" ]
 	},
-	"webhookUrl": "",
-	"gameSettings":
-	{
+	"webhookUrl": "https://mixitup.webhook/",
+	"streamerbotConfig": {
+		"port": 8014,
+		"endpoint": "/chati",
+		"password": "delilahsbasement",
+		"autoConnect": true,
+		"reconnect": true
+	},
+	"streamerbotActions": {
+		"trapMessage": "929a40f0-eb5f-44a8-a94a-368e144fbde2",
+		"bouncedMessage": "185e6b60-3bd0-4a93-8644-3832ef7ca890"
+	},
+	"gameSettings": {
 		"searchAttemptsRequired": 5,
 		"lootAttemptsRequired": 5,
 		"lootChance": 0.7,

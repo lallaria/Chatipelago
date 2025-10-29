@@ -5,8 +5,24 @@ Parses after events are received
 import * as server from './server.js';
 import * as webhook from './webhook-put.js';
 import * as archipelagoHelper from './archipelagoHelper.js';
-import * as config from './config.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
 import * as messageUtil from './messageUtil.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load configuration from JSON file
+let config;
+try {
+  const configPath = path.join(__dirname, 'config.json');
+  const configData = await fs.readFile(configPath, 'utf8');
+  config = JSON.parse(configData);
+} catch (error) {
+  console.error('Error loading config.json:', error);
+  process.exit(1);
+}
 import thesaurus from 'thesaurus';
 
 export {init}
@@ -47,9 +63,6 @@ function onEvent(message) {
             case '!hint':
                 archipelagoHelper.getHints(strMessage);
                 break;
-            case '!deathlink':
-                deathLink(strMessage.substring(11));
-                break;
             case '!turnchationdaddy':
                 countdown = true;
                 break;
@@ -59,11 +72,15 @@ function onEvent(message) {
     }
 }
 
-function onItem(id, item, player, flags) {
+async function onItem(id, item, player, flags) {
 	if (countdown) {
         if (flags === 4) {
 	        if (Math.random() < 0.6) { currently_dead = true; }
-	        webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
+	        const timedOutUser = await webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
+	        if (timedOutUser) {
+	            console.log(`${timedOutUser} user died`);
+	            deathLink(timedOutUser);
+	        }
         }
 	    else if (flags === 1) {
         	webhook.postInChat(`bbirbShiny ${player} found us ${item}, it's really important. bbirbShiny`, false, false);
@@ -131,10 +148,8 @@ function deathLink(player) {
     let reason = `${player} met their ${messageUtil.getRandomIndex(randAtk)} by ${messageUtil.generateRandomText(messageUtil.KILLER)}!`
     webhook.postInChat(`Good luck everyone, @${reason}`, false, false);
     // currently_dead = true; // for testing
-    if (currently_dead) {
-        currently_dead = false;
-        return archipelagoHelper.giveDeathLink(reason);
-    }
+    currently_dead = false;
+    archipelagoHelper.giveDeathLink(reason);
 }
 
 let lostIt = false;
