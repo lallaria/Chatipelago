@@ -8,6 +8,7 @@ export {
     checkGoal,
     getItemNameByLocation,
     getCheckableLocation,
+    anyLocationsLeft,
     isItemObtained,
     claimCheck,
     setOnItemRecieved,
@@ -161,6 +162,11 @@ function getCheckableLocation() {
     if (validLocations.length === 0) return;
 
     return validLocations[Math.floor(Math.random() * validLocations.length)];
+}
+
+function anyLocationsLeft() {
+    const locations = client.room.missingLocations
+    return locations.length > 0
 }
 
 function isItemObtained(itemId) {
