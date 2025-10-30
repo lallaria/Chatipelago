@@ -37,26 +37,32 @@ jobs:
         run: npm ci
 
       - name: Build executable
-        run: npx pkg start-chatipelago.js --targets node18-${{ matrix.platform }}-x64 --output-path dist/chatipelago${{ matrix.extension }}
+        run: npx pkg start-chatipelago.js --targets node18-${{ matrix.platform }}-x64 --output-path dist/
         env:
           PKG_CACHE_PATH: ${{ runner.temp }}/pkg-cache
 
-      - name: Package with assets (Windows)
+      - name: Find and move executable (Windows)
         if: matrix.platform == 'win'
         run: |
           mkdir dist\chatipelago-win-x64
-          move dist\chatipelago.exe dist\chatipelago-win-x64\
+          move dist\start-chatipelago.exe dist\chatipelago-win-x64\chatipelago.exe
           xcopy /E /I customConfig dist\chatipelago-win-x64\customConfig
           copy icon.png dist\chatipelago-win-x64\
           copy package.json dist\chatipelago-win-x64\
           if exist README.md copy README.md dist\chatipelago-win-x64\
         shell: cmd
 
-      - name: Package with assets (Unix)
+      - name: Find and move executable (Unix)
         if: matrix.platform != 'win'
         run: |
           mkdir -p dist/chatipelago-${{ matrix.platform }}-x64
-          mv dist/chatipelago${{ matrix.extension }} dist/chatipelago-${{ matrix.platform }}-x64/
+          if [ -f "dist/start-chatipelago" ]; then
+            mv dist/start-chatipelago dist/chatipelago-${{ matrix.platform }}-x64/chatipelago
+          elif [ -f "dist/start-chatipelago-${{ matrix.platform }}-x64" ]; then
+            mv dist/start-chatipelago-${{ matrix.platform }}-x64 dist/chatipelago-${{ matrix.platform }}-x64/chatipelago
+          else
+            find dist -name "start-chatipelago*" -type f -exec mv {} dist/chatipelago-${{ matrix.platform }}-x64/chatipelago \;
+          fi
           cp -r customConfig dist/chatipelago-${{ matrix.platform }}-x64/
           cp icon.png dist/chatipelago-${{ matrix.platform }}-x64/
           cp package.json dist/chatipelago-${{ matrix.platform }}-x64/
