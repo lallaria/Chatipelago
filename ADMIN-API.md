@@ -38,10 +38,6 @@ npm run client
 - `GET /api/status` - Connection status and system information
 - `POST /api/restart` - Restart the Chatipelago client
 
-### File Generation
-- `POST /api/generate-zip` - Generate zip file from YAML upload
-- `GET /api/download/:filename` - Download generated zip file
-
 ## Configuration Format
 
 The system now uses `config.json` instead of `config.js`:
@@ -100,7 +96,7 @@ The console log streaming uses Server-Sent Events (SSE) and captures ALL console
 ## File Management
 
 - **Upload Directory**: `/tmp` for YAML files
-- **Generated Files**: `/tmp` for zip files  
+- **Generated Files**: `/tmp` for apworlds  
 - **File Size Limit**: 1MB maximum for YAML uploads
 - **Cleanup**: Automatic cleanup after download or timeout
 
