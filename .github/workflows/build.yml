@@ -64,12 +64,9 @@ jobs:
 
       - name: Create archive (Windows)
         if: matrix.platform == 'win'
-        uses: thedoctor0/zip-release@v0.7.1
-        with:
-          type: 'zip'
-          filename: 'dist/chatipelago-win-x64.zip'
-          path: 'dist/chatipelago-win-x64'
-          exclusions: '*.zip *.tar.gz'
+        run: |
+          Compress-Archive -Path dist\chatipelago-win-x64\* -DestinationPath dist\chatipelago-win-x64.zip -Force
+        shell: powershell
 
       - name: Create archive (Unix)
         if: matrix.platform != 'win'
