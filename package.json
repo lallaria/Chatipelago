@@ -29,7 +29,16 @@
   "pkg": {
     "assets": [
       "customConfig/**/*",
-      "icon.png"
+      "icon.png",
+      "server.js",
+      "admin-server.js",
+      "bot-get.js",
+      "webhook-put.js",
+      "config.js",
+      "apWorldSettings.js",
+      "archipelagoHelper.js",
+      "messageUtil.js",
+      "node_modules/**/*"
     ],
     "targets": [
       "node18-win-x64",

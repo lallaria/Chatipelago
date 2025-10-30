@@ -37,7 +37,11 @@ jobs:
         run: npm ci
 
       - name: Build executable
-        run: npx pkg start-chatipelago.js --targets node18-${{ matrix.platform }}-x64 --output-path dist/
+        run: |
+          echo "Building for ${{ matrix.platform }}..."
+          npx pkg chatipelago-launcher.js --targets node18-${{ matrix.platform }}-x64 --output-path dist/
+          echo "Files in dist after build:"
+          ls -la dist/ || dir dist
         env:
           PKG_CACHE_PATH: ${{ runner.temp }}/pkg-cache
 
@@ -45,7 +49,13 @@ jobs:
         if: matrix.platform == 'win'
         run: |
           mkdir dist\chatipelago-win-x64
-          move dist\start-chatipelago.exe dist\chatipelago-win-x64\chatipelago.exe
+          if exist "dist\chatipelago-launcher.exe" (
+            move dist\chatipelago-launcher.exe dist\chatipelago-win-x64\chatipelago.exe
+          ) else (
+            echo "Executable not found, listing dist contents:"
+            dir dist
+            exit /b 1
+          )
           xcopy /E /I customConfig dist\chatipelago-win-x64\customConfig
           copy icon.png dist\chatipelago-win-x64\
           copy package.json dist\chatipelago-win-x64\
@@ -56,37 +66,64 @@ jobs:
         if: matrix.platform != 'win'
         run: |
           mkdir -p dist/chatipelago-${{ matrix.platform }}-x64
-          if [ -f "dist/start-chatipelago" ]; then
-            mv dist/start-chatipelago dist/chatipelago-${{ matrix.platform }}-x64/chatipelago
-          elif [ -f "dist/start-chatipelago-${{ matrix.platform }}-x64" ]; then
-            mv dist/start-chatipelago-${{ matrix.platform }}-x64 dist/chatipelago-${{ matrix.platform }}-x64/chatipelago
+          if [ -f "dist/chatipelago-launcher" ]; then
+            mv dist/chatipelago-launcher dist/chatipelago-${{ matrix.platform }}-x64/chatipelago
+          elif [ -f "dist/chatipelago-launcher-${{ matrix.platform }}-x64" ]; then
+            mv dist/chatipelago-launcher-${{ matrix.platform }}-x64 dist/chatipelago-${{ matrix.platform }}-x64/chatipelago
           else
-            find dist -name "start-chatipelago*" -type f -exec mv {} dist/chatipelago-${{ matrix.platform }}-x64/chatipelago \;
+            echo "Executable not found, listing dist contents:"
+            ls -la dist/
+            find dist -name "chatipelago-launcher*" -type f || exit 1
+            find dist -name "chatipelago-launcher*" -type f -exec mv {} dist/chatipelago-${{ matrix.platform }}-x64/chatipelago \;
           fi
           cp -r customConfig dist/chatipelago-${{ matrix.platform }}-x64/
           cp icon.png dist/chatipelago-${{ matrix.platform }}-x64/
           cp package.json dist/chatipelago-${{ matrix.platform }}-x64/
           cp README.md dist/chatipelago-${{ matrix.platform }}-x64/ 2>/dev/null || true
+          # Also copy required JS files
+          cp server.js dist/chatipelago-${{ matrix.platform }}-x64/ 2>/dev/null || true
+          cp admin-server.js dist/chatipelago-${{ matrix.platform }}-x64/ 2>/dev/null || true
+
+      - name: Verify executable exists
+        run: |
+          if [ "${{ matrix.platform }}" == "win" ]; then
+            if not exist "dist\chatipelago-win-x64\chatipelago.exe" exit /b 1
+            dir dist\chatipelago-win-x64\chatipelago.exe
+          else
+            ls -lh "dist/chatipelago-${{ matrix.platform }}-x64/chatipelago" || find "dist/chatipelago-${{ matrix.platform }}-x64" -name "chatipelago" -type f
+          fi
+        shell: bash
 
       - name: Create archive (Windows)
         if: matrix.platform == 'win'
         run: |
+          echo "Contents of chatipelago-win-x64 before archiving:"
+          dir /s dist\chatipelago-win-x64
           Compress-Archive -Path dist\chatipelago-win-x64\* -DestinationPath dist\chatipelago-win-x64.zip -Force
+          echo "Archive created:"
+          dir dist\chatipelago-win-x64.zip
         shell: powershell
 
       - name: Create archive (Unix)
         if: matrix.platform != 'win'
         run: |
           cd dist/chatipelago-${{ matrix.platform }}-x64
+          chmod +x chatipelago
           tar -czf ../chatipelago-${{ matrix.platform }}-x64.tar.gz *
+          ls -lh ../chatipelago-${{ matrix.platform }}-x64.tar.gz
 
-      - name: Upload artifacts
+      - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
-          name: chatipelago-${{ matrix.platform }}-x64
-          path: |
-            dist/chatipelago-${{ matrix.platform }}-x64/chatipelago${{ matrix.extension }}
-            dist/chatipelago-${{ matrix.platform }}-x64.*
+          name: chatipelago-${{ matrix.platform }}-x64-executable
+          path: dist/chatipelago-${{ matrix.platform }}-x64/chatipelago${{ matrix.extension }}
+          retention-days: 30
+
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatipelago-${{ matrix.platform }}-x64-archive
+          path: dist/chatipelago-${{ matrix.platform }}-x64.*
           retention-days: 30
 
   release:
@@ -97,16 +134,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download all artifacts
+      - name: Download archive artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: chatipelago-*
+          pattern: chatipelago-*-archive
           path: dist/
+          merge-multiple: true
+
+      - name: Download executable artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: chatipelago-*-executable
+          path: dist-executables/
           merge-multiple: true
 
       - name: List files for release
         run: |
-          find dist -type f \( -name "*.zip" -o -name "*.tar.gz" \) | head -20
+          echo "Archive files:"
+          find dist -type f \( -name "*.zip" -o -name "*.tar.gz" \) || true
+          echo "Executable files:"
+          find dist-executables -type f -executable || find dist-executables -type f || true
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -114,6 +161,8 @@ jobs:
           files: |
             dist/**/*.zip
             dist/**/*.tar.gz
+            dist-executables/**/chatipelago*
+            dist-executables/**/chatipelago.exe
           draft: false
           prerelease: false
           fail_on_unmatched_files: false
