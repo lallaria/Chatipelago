@@ -5,24 +5,9 @@ Parses after events are received
 import * as server from './server.js';
 import * as webhook from './webhook-put.js';
 import * as archipelagoHelper from './archipelagoHelper.js';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import * as messageUtil from './messageUtil.js';
+import * as config from './config.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load configuration from JSON file
-let config;
-try {
-  const configPath = path.join(__dirname, 'config.json');
-  const configData = await fs.readFile(configPath, 'utf8');
-  config = JSON.parse(configData);
-} catch (error) {
-  console.error('Error loading config.json:', error);
-  process.exit(1);
-}
 import thesaurus from 'thesaurus';
 
 export {init}
@@ -33,14 +18,14 @@ var strMessage = "";
 var countdown = true;
 
 function init() {
+    config.loadFiles();
+    messageUtil.loadFiles();
+
     server.setOnEvent(onEvent);
     archipelagoHelper.setOnItemRecieved(onItem);
     archipelagoHelper.setOnCountdown(onCountdown);
     archipelagoHelper.setOnDeathLink(onDeathLink);
     archipelagoHelper.setOnHints(onHint);
-
-    config.loadFiles();
-    messageUtil.loadFiles();
 }
 
 function onEvent(message) {

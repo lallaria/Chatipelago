@@ -1,24 +1,24 @@
 import { StreamerbotClient } from '@streamerbot/client';
 import * as http from 'http';
-import * as fs from 'fs/promises';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import * as fs from 'fs/promises';
+import * as config from './config.js';
 import * as webhook from './webhook-put.js';
+import { init as initializeBot } from './bot-get.js';
+import { fileURLToPath } from 'url';
+
+// Load config immediately so we can check it
+config.loadFiles();
+
+const streamerbotclient = new StreamerbotClient(
+  config.streamerbotConfig
+);
+
+// Share the client instance with webhook module
+webhook.setStreamerbotClient(streamerbotclient);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Load configuration from JSON file
-let config;
-try {
-  const configPath = path.join(__dirname, 'config.json');
-  const configData = await fs.readFile(configPath, 'utf8');
-  config = JSON.parse(configData);
-} catch (error) {
-  console.error('Error loading config.json:', error);
-  process.exit(1);
-}
-
 // Monitor for restart signals
 const restartSignalPath = path.join(__dirname, 'tmp', 'restart_signal');
 let lastRestartSignal = null;
@@ -40,11 +40,6 @@ async function checkForRestartSignal() {
 
 // Check for restart signals every 2 seconds
 setInterval(checkForRestartSignal, 2000);
-
-const streamerbotclient = new StreamerbotClient(config.streamerbotConfig);
-
-// Share the client instance with webhook module
-webhook.setStreamerbotClient(streamerbotclient);
 
 export { setOnEvent, sayGoodBye }
 
@@ -73,29 +68,31 @@ if (config.mixitup) {
 }
 
 if (config.streamerbot) {
+    // Ensure bot init runs so onEvent is registered
+    try {
+        initializeBot();
+    } catch (e) {
+        console.error('[Bot Init] Failed to initialize:', e?.message || e);
+    }
 
-    // WebSocket event listeners for command processing
+    // WebSocket event listeners for command processing (Streamer.bot Command.Triggered)
     streamerbotclient.on('Command.Triggered', (data) => {
-        if (data.commandGroup === 'Chatipelago') {
-            console.log(`Command triggered: ${data.command} with args: ${data.arguments}`);
-            onEvent(`/${data.command}${data.arguments ? '+' + data.arguments.join('+') : ''}`);
+        const payload = data?.data || data;
+        const command = payload?.command; // e.g. '!search'
+        const name = payload?.name;       // e.g. 'ChatiChat'
+        const message = (payload?.message || '').trim(); // text after the command
+
+        const args = message.length > 0 ? message.split(/\s+/) : [];
+
+        if (name === 'ChatiChat' || name === 'ChatiMod') {
+            console.log(`[Streamer.bot] Command.Triggered name="${name}" command="${command}" args=${JSON.stringify(args)}`);
+        }
+
+        if (typeof onEvent === 'function') {
+            onEvent(`/${command}${args.length ? '+' + args.join('+') : ''}`);
+        } else {
+            console.log('[Streamer.bot] onEvent handler not ready');
         }
     });
-
-    // Listen for custom events as alternative
-    streamerbotclient.on('CustomEvent', (data) => {
-        if (data.eventName === 'ChatipelagoCommand') {
-            console.log(`Custom command event: ${data.command} with args: ${data.arguments}`);
-            onEvent(`/${data.command}${data.arguments ? '+' + data.arguments.join('+') : ''}`);
-        }
-    });
-
-    // Handle action responses
-    streamerbotclient.on('ActionResponse', (data) => {
-        console.log('Action response received:', data);
-        // Process responses from trap actions or other actions as needed
-    });
-
 }
-
-import './bot-get.js'
+ 

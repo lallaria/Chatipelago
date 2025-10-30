@@ -8,7 +8,7 @@ import { spawn } from 'child_process';
 import yaml from 'yaml';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.join(path.dirname(__filename), 'customConfig');
 
 const app = express();
 const PORT = 8015;
@@ -124,7 +124,14 @@ app.get('/api/messages/:filename', async (req, res) => {
     const filePath = path.join(__dirname, 'messages', filename);
     const fileData = await fs.readFile(filePath, 'utf8');
     const jsonData = JSON.parse(fileData);
-    res.json(jsonData);
+    
+    // If the file is an array, wrap it in an object with 'messages' property
+    // This maintains backward compatibility with old array format
+    const responseData = Array.isArray(jsonData) 
+      ? { messages: jsonData } 
+      : jsonData;
+    
+    res.json(responseData);
   } catch (error) {
     console.error('Error reading message file:', error);
     res.status(500).json({ error: 'Failed to read message file' });
@@ -139,7 +146,16 @@ app.put('/api/messages/:filename', async (req, res) => {
     }
     
     const filePath = path.join(__dirname, 'messages', filename);
-    const jsonData = JSON.stringify(req.body, null, 2);
+    
+    // If the request body has a 'messages' property, extract it
+    // Otherwise use the body as-is for backward compatibility
+    let dataToWrite = req.body;
+    if (req.body && req.body.messages && Array.isArray(req.body.messages)) {
+      // Save as array format to maintain compatibility with existing code
+      dataToWrite = req.body.messages;
+    }
+    
+    const jsonData = JSON.stringify(dataToWrite, null, 2);
     await fs.writeFile(filePath, jsonData, 'utf8');
     
     res.json({ success: true, message: 'Message file updated' });
@@ -212,10 +228,10 @@ app.post('/api/generate-zip', upload.single('yamlFile'), async (req, res) => {
       throw new Error('Invalid YAML schema: items must contain exactly 60 items');
     }
     if (!yamlData.progitems || !Array.isArray(yamlData.progitems) || yamlData.progitems.length !== 10) {
-      throw new Error('Invalid YAML schema: progitems must contain exactly 10 items');
+      throw new Error('Invalid YAML schema: progitems must contain exactly 3 items');
     }
     if (!yamlData.trapitems || !Array.isArray(yamlData.trapitems) || yamlData.trapitems.length !== 10) {
-      throw new Error('Invalid YAML schema: trapitems must contain exactly 10 items');
+      throw new Error('Invalid YAML schema: trapitems must contain exactly 3 items');
     }
     if (!yamlData.locations || !Array.isArray(yamlData.locations) || yamlData.locations.length !== 50) {
       throw new Error('Invalid YAML schema: locations must contain exactly 50 items');

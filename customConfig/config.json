@@ -2,18 +2,20 @@
 	"mixitup": false,
 	"streamerbot": true,
 	"connectionInfo": {
-		"hostname": "localhost",
+		"hostname": "archipelago.gg",
 		"port": 38281,
 		"playerName": "Chat",
 		"tags": [ "AP", "DeathLink" ]
 	},
 	"webhookUrl": "https://mixitup.webhook/",
 	"streamerbotConfig": {
+		"host": "localhost",
 		"port": 8014,
 		"endpoint": "/chati",
 		"password": "delilahsbasement",
-		"autoConnect": true,
-		"reconnect": true
+		"immediate": true,
+		"autoReconnect": true,
+		"retries": 5
 	},
 	"streamerbotActions": {
 		"trapMessage": "929a40f0-eb5f-44a8-a94a-368e144fbde2",
