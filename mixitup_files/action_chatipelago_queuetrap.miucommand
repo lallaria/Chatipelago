@@ -1,0 +1,30 @@
+{
+	"$type": "MixItUp.Base.Model.Commands.ActionGroupCommandModel, MixItUp.Base",
+	"RunOneRandomly": false,
+	"ID": "1a7a2e53-e44b-4f99-a9ea-36ff98fa2d53",
+	"Name": "Queue for trap",
+	"Type": 4,
+	"IsEnabled": true,
+	"Unlocked": false,
+	"IsEmbedded": false,
+	"GroupName": "Chatipelago",
+	"Triggers": [],
+	"Requirements": {
+		"$type": "MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base",
+		"Requirements": []
+	},
+	"Actions": [
+		{
+			"$type": "MixItUp.Base.Model.Actions.SpecialIdentifierActionModel, MixItUp.Base",
+			"SpecialIdentifierName": "chatilootqueue",
+			"ReplacementText": " ",
+			"MakeGloballyUsable": true,
+			"ShouldProcessMath": false,
+			"ReplaceSpecialIdentifiersInFunctions": false,
+			"ID": "87517f00-3c1c-49aa-9ea8-b33a44e1e28f",
+			"Name": "Special Identifier",
+			"Type": 12,
+			"Enabled": true
+		}
+	]
+}

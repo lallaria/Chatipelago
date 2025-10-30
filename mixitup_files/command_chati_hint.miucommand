@@ -1,0 +1,111 @@
+{
+	"$type": "MixItUp.Base.Model.Commands.ChatCommandModel, MixItUp.Base",
+	"IncludeExclamation": true,
+	"Wildcards": false,
+	"ID": "8dd9f910-18de-4570-bc24-7c0ff25f8fbb",
+	"Name": "Chati hint",
+	"Type": 1,
+	"IsEnabled": true,
+	"Unlocked": false,
+	"IsEmbedded": false,
+	"GroupName": "Chatipelago",
+	"Triggers": [
+		"hint"
+	],
+	"Requirements": {
+		"$type": "MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base",
+		"Requirements": [
+			{
+				"$type": "MixItUp.Base.Model.Requirements.RoleRequirementModel, MixItUp.Base",
+				"StreamingPlatform": 99999,
+				"UserRole": 800,
+				"UserRoleList": [],
+				"SubscriberTier": 1,
+				"YouTubeMembershipLevelID": null,
+				"TrovoCustomRole": null,
+				"PatreonBenefitID": ""
+			},
+			{
+				"$type": "MixItUp.Base.Model.Requirements.CooldownRequirementModel, MixItUp.Base",
+				"Type": 0,
+				"IndividualAmount": 0,
+				"GroupName": null
+			},
+			{
+				"$type": "MixItUp.Base.Model.Requirements.ArgumentsRequirementModel, MixItUp.Base",
+				"Items": [],
+				"AssignToSpecialIdentifiers": false
+			},
+			{
+				"$type": "MixItUp.Base.Model.Requirements.ThresholdRequirementModel, MixItUp.Base",
+				"Amount": 0,
+				"TimeSpan": 0,
+				"RunForEachUser": false
+			},
+			{
+				"$type": "MixItUp.Base.Model.Requirements.SettingsRequirementModel, MixItUp.Base",
+				"DeleteChatMessageWhenRun": false,
+				"DontDeleteChatMessageWhenRun": false,
+				"ShowOnChatContextMenu": false
+			}
+		]
+	},
+	"Actions": [
+		{
+			"$type": "MixItUp.Base.Model.Actions.ConditionalActionModel, MixItUp.Base",
+			"CaseSensitive": false,
+			"Operator": 0,
+			"RepeatWhileTrue": false,
+			"Clauses": [
+				{
+					"$type": "MixItUp.Base.Model.Actions.ConditionalClauseModel, MixItUp.Base",
+					"ComparisionType": 0,
+					"Value1": "$chatiPort",
+					"Value2": "443",
+					"Value3": ""
+				}
+			],
+			"CommandID": "00000000-0000-0000-0000-000000000000",
+			"Actions": [
+				{
+					"$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
+					"Url": "https://$chatiServerLoc/$message",
+					"ResponseType": 0,
+					"JSONToSpecialIdentifiers": null,
+					"ID": "4b1b7269-05ab-406b-855c-00ede7ad4de4",
+					"Name": "Web Request",
+					"Type": 11,
+					"Enabled": true
+				},
+				{
+					"$type": "MixItUp.Base.Model.Actions.CommandActionModel, MixItUp.Base",
+					"ActionType": 9,
+					"CommandID": "00000000-0000-0000-0000-000000000000",
+					"PreMadeType": null,
+					"Arguments": null,
+					"WaitForCommandToFinish": false,
+					"IgnoreUsageRequirements": false,
+					"CommandGroupName": null,
+					"ID": "69bf50a3-7950-41a2-b443-3869e18f19fd",
+					"Name": "Command",
+					"Type": 20,
+					"Enabled": true
+				}
+			],
+			"ID": "b295884a-aaf2-4548-bb15-1f5018381870",
+			"Name": "Conditional",
+			"Type": 17,
+			"Enabled": true
+		},
+		{
+			"$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
+			"Url": "http://$chatiServerLoc:$chatiPort/$message",
+			"ResponseType": 0,
+			"JSONToSpecialIdentifiers": null,
+			"ID": "a3bde039-df32-45a5-a2b9-de65d7edb83d",
+			"Name": "Web Request",
+			"Type": 11,
+			"Enabled": true
+		}
+	]
+}

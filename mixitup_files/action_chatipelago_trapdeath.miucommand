@@ -1,0 +1,93 @@
+{
+	"$type": "MixItUp.Base.Model.Commands.ActionGroupCommandModel, MixItUp.Base",
+	"RunOneRandomly": false,
+	"ID": "2e4c75a0-756f-47b6-a0c4-91f4fdc2a3cf",
+	"Name": "Trap Death",
+	"Type": 4,
+	"IsEnabled": true,
+	"Unlocked": false,
+	"IsEmbedded": false,
+	"GroupName": "Chatipelago",
+	"Triggers": [],
+	"Requirements": {
+		"$type": "MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base",
+		"Requirements": []
+	},
+	"Actions": [
+		{
+			"$type": "MixItUp.Base.Model.Actions.ScriptActionModel, MixItUp.Base",
+			"ActionType": 0,
+			"Script": "using System;\r\n\r\nnamespace CustomNamespace\r\n{\r\n    public class CustomClass\r\n    {\r\n        public object Run() \r\n        {\r\n            string chatilootqueue = \"$chatilootqueue\";\r\n            string[] chatiqueueArray = chatilootqueue.Trim().Split(' ');\r\n            Random rand = new Random();\r\n            int rIndex = rand.Next(chatiqueueArray.Length);\r\n            return chatiqueueArray[rIndex];\r\n        }\r\n    }\r\n}",
+			"ID": "82508047-f198-4cc7-b172-6779adeb35f9",
+			"Name": "Choose Name from String of Names",
+			"Type": 38,
+			"Enabled": true
+		},
+		{
+			"$type": "MixItUp.Base.Model.Actions.ChatActionModel, MixItUp.Base",
+			"ChatText": "$scriptresult",
+			"SendAsStreamer": false,
+			"IsWhisper": false,
+			"WhisperUserName": null,
+			"ID": "27437c8b-a9b8-491e-b017-cec699464a60",
+			"Name": "Script Debug Message",
+			"Type": 1,
+			"Enabled": false
+		},
+		{
+			"$type": "MixItUp.Base.Model.Actions.SpecialIdentifierActionModel, MixItUp.Base",
+			"SpecialIdentifierName": "message",
+			"ReplacementText": "!deathlink $scriptresult",
+			"MakeGloballyUsable": false,
+			"ShouldProcessMath": false,
+			"ReplaceSpecialIdentifiersInFunctions": false,
+			"ID": "62f0552c-879d-4a0f-b2a7-8c554127e61f",
+			"Name": "Construct a command for Chati",
+			"Type": 12,
+			"Enabled": true
+		},
+		{
+			"$type": "MixItUp.Base.Model.Actions.WebRequestActionModel, MixItUp.Base",
+			"Url": "$chatiWebRequestURL/$message",
+			"ResponseType": 0,
+			"JSONToSpecialIdentifiers": null,
+			"ID": "f795726a-e9df-4576-a87a-03d8681fc733",
+			"Name": "Send Command with name to Chati",
+			"Type": 11,
+			"Enabled": true
+		},
+		{
+			"$type": "MixItUp.Base.Model.Actions.CommandActionModel, MixItUp.Base",
+			"ActionType": 0,
+			"CommandID": "1a7a2e53-e44b-4f99-a9ea-36ff98fa2d53",
+			"PreMadeType": null,
+			"Arguments": null,
+			"WaitForCommandToFinish": false,
+			"IgnoreUsageRequirements": false,
+			"CommandGroupName": null,
+			"ID": "ef5375e9-f40f-411f-96e2-4c559dc1fe4a",
+			"Name": "Clear Queue",
+			"Type": 20,
+			"Enabled": true
+		},
+		{
+			"$type": "MixItUp.Base.Model.Actions.WaitActionModel, MixItUp.Base",
+			"Amount": "5",
+			"ID": "05e3d28f-27a4-48d8-a284-05e256626fe7",
+			"Name": "Wait for everything to post",
+			"Type": 7,
+			"Enabled": true
+		},
+		{
+			"$type": "MixItUp.Base.Model.Actions.ModerationActionModel, MixItUp.Base",
+			"ActionType": 0,
+			"TargetUsername": "@$scriptresult",
+			"TimeoutAmount": "60",
+			"ModerationReason": "Chatipelago",
+			"ID": "37ed48b9-62ec-42da-a152-e7ddc40abf07",
+			"Name": "Timeout Chosen User",
+			"Type": 22,
+			"Enabled": true
+		}
+	]
+}

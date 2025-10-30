@@ -1,19 +1,14 @@
 # Chatipelago
 
-Webserver AP Client for Twitch Chat!
+Webserver AP Client for Twitch (or youtube or...) Chat!
 
 Requirements for use:
-Twitch chat integration with a Webhook. 
-Tested on Mixitup (did not complete testing on streamer.bot but it should work)
+Either MixItUp or streamer.bot for chat integration
 
-Import mixitup_files into mixitup - webhook into webhook, loot/search into command.
-Import will blow away the names, ensure that the name and in chat name (if applicable)
-are filled in, and that the command is unlocked.  Copy the webhook url and place it
-in config.js
+Chatipelago Client (this)
 
-Chatipelago Chat URL can be changed to any host hosting the Chatipelago webserver.
-Webserver requirements:
-node.js
-npm
-eslint: ^8.57.1
-archipelago.js: ^1.1.0
+chatpelago apworld (create your own!)
+
+chatipelago yaml to generate the game with (Template will work, don't forget to change the name)
+
+Chat!

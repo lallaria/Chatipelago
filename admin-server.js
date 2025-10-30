@@ -9,6 +9,7 @@ import yaml from 'yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.join(path.dirname(__filename), 'customConfig');
+const __projectRoot = path.dirname(__filename);
 
 const app = express();
 const PORT = 8015;
@@ -209,6 +210,18 @@ app.post('/api/restart', (req, res) => {
   } catch (error) {
     console.error('Error restarting client:', error);
     res.status(500).json({ error: 'Failed to restart client' });
+  }
+});
+
+// Streamer.bot actions text endpoint
+app.get('/api/streamerbot/actions-text', async (req, res) => {
+  try {
+    const actionsPath = path.join(__projectRoot, 'streamer.bot', 'chatipelago_streamer_bot_actions');
+    const data = await fs.readFile(actionsPath, 'utf8');
+    res.json({ text: data });
+  } catch (error) {
+    console.error('Error reading streamer.bot actions file:', error);
+    res.status(500).json({ error: 'Failed to read streamer.bot actions' });
   }
 });
 

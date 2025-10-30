@@ -56,7 +56,7 @@ function sayGoodBye() {
 if (config.mixitup) {
     'use strict';
 
-    var port = process.env.PORT || 1339;
+    var port = process.env.PORT || 8013;
 
     http.createServer(function (req, res) {
         onEvent(req.url);

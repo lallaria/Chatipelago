@@ -1,0 +1,54 @@
+{
+	"$type": "MixItUp.Base.Model.Commands.EventCommandModel, MixItUp.Base",
+	"EventType": 100,
+	"ID": "2b67d4b5-d68c-46b3-b115-9ea53bb12961",
+	"Name": "Application Launch",
+	"Type": 2,
+	"IsEnabled": true,
+	"Unlocked": false,
+	"IsEmbedded": false,
+	"GroupName": null,
+	"Triggers": [],
+	"Requirements": {
+		"$type": "MixItUp.Base.Model.Requirements.RequirementsSetModel, MixItUp.Base",
+		"Requirements": []
+	},
+	"Actions": [
+		{
+			"$type": "MixItUp.Base.Model.Actions.SpecialIdentifierActionModel, MixItUp.Base",
+			"SpecialIdentifierName": "chatilootqueue",
+			"ReplacementText": "\" \"",
+			"MakeGloballyUsable": true,
+			"ShouldProcessMath": false,
+			"ReplaceSpecialIdentifiersInFunctions": false,
+			"ID": "e2ef3efc-f94c-4488-85f1-72a0d5fd30c8",
+			"Name": "ChatiLootQueue",
+			"Type": 12,
+			"Enabled": true
+		},
+		{
+			"$type": "MixItUp.Base.Model.Actions.SpecialIdentifierActionModel, MixItUp.Base",
+			"SpecialIdentifierName": "chatiServerLoc",
+			"ReplacementText": "localhost",
+			"MakeGloballyUsable": true,
+			"ShouldProcessMath": false,
+			"ReplaceSpecialIdentifiersInFunctions": false,
+			"ID": "9d0dce58-899c-482b-b008-ab2843913dfc",
+			"Name": "ChatiServerLoc",
+			"Type": 12,
+			"Enabled": true
+		},
+		{
+			"$type": "MixItUp.Base.Model.Actions.SpecialIdentifierActionModel, MixItUp.Base",
+			"SpecialIdentifierName": "chatiPort",
+			"ReplacementText": "8013",
+			"MakeGloballyUsable": true,
+			"ShouldProcessMath": false,
+			"ReplaceSpecialIdentifiersInFunctions": false,
+			"ID": "d9f51d8a-e26e-40ba-8841-dc9e82aa6e89",
+			"Name": "ChatiPort",
+			"Type": 12,
+			"Enabled": true
+		}
+	]
+}
