@@ -1,0 +1,16 @@
+node_modules
+.git
+.github
+*.md
+*.yml
+*.yaml
+Dockerfile
+*.sln
+*.njsproj
+*.esproj
+obj
+bin
+MainHost - old
+mixitup_files
+streamer.bot
+

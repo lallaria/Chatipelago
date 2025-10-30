@@ -166,6 +166,26 @@ app.put('/api/messages/:filename', async (req, res) => {
   }
 });
 
+// Endpoint for main client to send logs
+app.post('/api/console/log', (req, res) => {
+  const logEntry = {
+    timestamp: req.body.timestamp || new Date().toISOString(),
+    message: req.body.message || '',
+    level: req.body.level || 'log'
+  };
+  
+  // Send to all SSE listeners
+  consoleListeners.forEach(listener => {
+    try {
+      listener.write(`data: ${JSON.stringify(logEntry)}\n\n`);
+    } catch (error) {
+      consoleListeners.delete(listener);
+    }
+  });
+  
+  res.json({ success: true });
+});
+
 // Console log streaming via SSE
 app.get('/api/console', (req, res) => {
   res.writeHead(200, {

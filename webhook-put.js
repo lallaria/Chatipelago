@@ -20,6 +20,10 @@ function setStreamerbotClient(client) {
     streamerbotclient = client;
 }
 
+async function sendMessage(message) {
+    await streamerbotclient.sendMessage('twitch', message, { bot: true });
+}
+
 async function postInChat(message, trap, bounced) {
     console.log(`Posting "${message}" in chat`);
 
@@ -42,10 +46,16 @@ async function postInChat(message, trap, bounced) {
 
     if (config.streamerbot) {
         try {
+            // Check WebSocket connection status before attempting to send
+            if (!streamerbotclient || !streamerbotclient.socket || streamerbotclient.socket.readyState !== streamerbotclient.socket.OPEN) {
+                console.error('[Streamer.bot] WebSocket not connected. State:', streamerbotclient?.socket?.readyState ?? 'client not initialized');
+                return;
+            }
+
             if (trap) {
                 // Trap message triggers additional trap-related actions with response
+                await sendMessage(message);
                 const response = await streamerbotclient.doAction(config.streamerbotActions.trapMessage, { 
-                    message: message,
                     customEventResponse: true 
                 });
                 
@@ -58,18 +68,21 @@ async function postInChat(message, trap, bounced) {
                 return response;
             } else if (bounced) {
                 // Bounced message enables emote mode for 30 seconds
+                await sendMessage(message);
                 await streamerbotclient.doAction(config.streamerbotActions.bouncedMessage, { 
                     message: message,
                 });
             } else {
                 // Normal message
-                await streamerbotclient.sendMessage({
-                    message: message,
-                    platform: 'Twitch'
-                });
+                await sendMessage(message);
             };
         } catch (error) {
-            console.error('Error sending message via WebSocket:', error);
+            console.error('[Streamer.bot Error] Failed to send message:', {
+                message: error.message,
+                stack: error.stack,
+                socketState: streamerbotclient?.socket?.readyState,
+                errorDetails: error.response || error.data || error
+            });
         }
     };
 }

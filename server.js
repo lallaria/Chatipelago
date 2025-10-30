@@ -10,6 +10,66 @@ import { fileURLToPath } from 'url';
 // Load config immediately so we can check it
 config.loadFiles();
 
+// Set up console.log interception to forward logs to admin server
+const ADMIN_SERVER_URL = 'http://localhost:8015';
+let logQueue = [];
+let logFlushing = false;
+
+async function flushLogs() {
+  if (logFlushing || logQueue.length === 0) return;
+  logFlushing = true;
+  
+  while (logQueue.length > 0) {
+    const logEntry = logQueue.shift();
+    try {
+      await fetch(`${ADMIN_SERVER_URL}/api/console/log`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(logEntry)
+      }).catch(() => {
+        // Admin server not available, silently fail
+      });
+    } catch (error) {
+      // Ignore errors - admin server may not be running
+    }
+  }
+  
+  logFlushing = false;
+}
+
+const originalConsoleLog = console.log;
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+function createLogInterceptor(original, level) {
+  return (...args) => {
+    const message = args.map(arg => 
+      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+    ).join(' ');
+    
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      message: message,
+      level: level
+    };
+    
+    logQueue.push(logEntry);
+    if (logQueue.length > 100) {
+      logQueue.shift(); // Prevent queue from growing too large
+    }
+    
+    // Flush asynchronously to avoid blocking
+    setImmediate(flushLogs);
+    
+    // Call original console method
+    original(...args);
+  };
+}
+
+console.log = createLogInterceptor(originalConsoleLog, 'log');
+console.error = createLogInterceptor(originalConsoleError, 'error');
+console.warn = createLogInterceptor(originalConsoleWarn, 'warn');
+
 const streamerbotclient = new StreamerbotClient(
   config.streamerbotConfig
 );
@@ -85,13 +145,11 @@ if (config.streamerbot) {
         const args = message.length > 0 ? message.split(/\s+/) : [];
 
         if (name === 'ChatiChat' || name === 'ChatiMod') {
-            console.log(`[Streamer.bot] Command.Triggered name="${name}" command="${command}" args=${JSON.stringify(args)}`);
-        }
-
-        if (typeof onEvent === 'function') {
-            onEvent(`/${command}${args.length ? '+' + args.join('+') : ''}`);
-        } else {
-            console.log('[Streamer.bot] onEvent handler not ready');
+          if (typeof onEvent === 'function') {
+              onEvent(`/${command}${args.length ? '+' + args.join('+') : ''}`);
+          } else {
+              console.log('[Streamer.bot] onEvent handler not ready');
+          }
         }
     });
 }
