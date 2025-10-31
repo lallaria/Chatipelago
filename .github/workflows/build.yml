@@ -58,20 +58,44 @@ jobs:
             ls -lh chatipelago
           fi
       
-      - name: Upload Windows executable
+      - name: Create zip archive (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $zipName = "chatipelago-windows-node${{ matrix.node-version }}.zip"
+          $filesToZip = @('chatipelago.exe', 'README.md', 'LICENSE') | Where-Object { Test-Path $_ }
+          if ($filesToZip.Count -eq 0) {
+            Write-Error "No files found to zip"
+            exit 1
+          }
+          Get-ChildItem $filesToZip | Compress-Archive -DestinationPath $zipName -Force
+          Write-Host "Created: $zipName ($(Get-Item $zipName | Select-Object -ExpandProperty Length) bytes)"
+      
+      - name: Create zip archive (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          ZIP_NAME="chatipelago-${{ matrix.os }}-node${{ matrix.node-version }}.zip"
+          zip -r "$ZIP_NAME" chatipelago README.md LICENSE 2>/dev/null || {
+            echo "Error: Failed to create zip archive"
+            exit 1
+          }
+          echo "Created: $ZIP_NAME ($(stat -f%z "$ZIP_NAME" 2>/dev/null || stat -c%s "$ZIP_NAME" 2>/dev/null || echo 'unknown') bytes)"
+      
+      - name: Upload zip archive (Windows)
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: chatipelago-windows-node${{ matrix.node-version }}
-          path: chatipelago.exe
+          path: chatipelago-windows-node${{ matrix.node-version }}.zip
           retention-days: 30
       
-      - name: Upload Unix executable
+      - name: Upload zip archive (Unix)
         if: runner.os != 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: chatipelago-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: chatipelago
+          path: chatipelago-${{ matrix.os }}-node${{ matrix.node-version }}.zip
           retention-days: 30
 
   release:

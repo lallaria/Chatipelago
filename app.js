@@ -23,6 +23,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const customConfigPath = getCustomConfigPath();
 
+// Read version from package.json
+const packageJson = JSON.parse(fssync.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+const VERSION = packageJson.version;
+
 // Load config immediately
 config.loadFiles();
 
@@ -64,8 +68,16 @@ console.log = createLogInterceptor(originalConsoleLog, 'log');
 console.error = createLogInterceptor(originalConsoleError, 'error');
 console.warn = createLogInterceptor(originalConsoleWarn, 'warn');
 
-// Initialize Streamerbot client
-const streamerbotclient = new StreamerbotClient(config.streamerbotConfig);
+// Initialize Streamerbot client with global error handler
+const streamerbotConfigWithErrorHandler = {
+  ...config.streamerbotConfig,
+  onError: (err) => {
+    // Suppress full traceback, just log the error message
+    console.error('[Streamer.bot] Connection error:', err.message);
+  }
+};
+
+const streamerbotclient = new StreamerbotClient(streamerbotConfigWithErrorHandler);
 webhook.setStreamerbotClient(streamerbotclient);
 
 // Restart signal monitoring
@@ -299,7 +311,7 @@ app.get('/api/status', (req, res) => {
     status: 'connected',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    version: '1.0.0'
+    version: VERSION
   });
 });
 
@@ -321,6 +333,24 @@ app.get('/api/streamerbot/actions-text', async (req, res) => {
   } catch (error) {
     console.error('Error reading streamer.bot actions file:', error);
     res.status(500).json({ error: 'Failed to read streamer.bot actions' });
+  }
+});
+
+app.post('/api/streamerbot/connect', async (req, res) => {
+  try {
+    if (!config.streamerbot) {
+      return res.status(400).json({ error: 'Streamer.bot integration is not enabled' });
+    }
+
+    if (!streamerbotclient) {
+      return res.status(500).json({ error: 'Streamer.bot client not initialized' });
+    }
+
+    await streamerbotclient.connect();
+    res.json({ success: true, message: 'Streamer.bot connection initiated' });
+  } catch (error) {
+    console.error('Error connecting to Streamer.bot:', error);
+    res.status(500).json({ error: `Failed to connect: ${error.message}` });
   }
 });
 

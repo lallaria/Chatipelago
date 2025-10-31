@@ -14,7 +14,6 @@
 		"endpoint": "/chati",
 		"password": "delilahsbasement",
 		"immediate": true,
-		"autoReconnect": true,
 		"retries": 5
 	},
 	"streamerbotActions": {

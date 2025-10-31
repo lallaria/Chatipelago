@@ -12,6 +12,10 @@ import { getCustomConfigPath, getConfigDir } from './config-unpacker-esm.js';
 const __filename = fileURLToPath(import.meta.url);
 const __projectRoot = path.dirname(__filename);
 
+// Read version from package.json
+const packageJson = JSON.parse(fssync.readFileSync(path.join(__projectRoot, 'package.json'), 'utf8'));
+const VERSION = packageJson.version;
+
 // Use unpacked config path if running as nexe executable, otherwise use local path
 const customConfigPath = getCustomConfigPath();
 const __dirname = customConfigPath;
@@ -228,7 +232,7 @@ app.get('/api/status', (req, res) => {
     status: 'connected',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    version: '1.0.0'
+    version: VERSION
   });
 });
 
