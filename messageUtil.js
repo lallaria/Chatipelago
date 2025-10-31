@@ -1,5 +1,7 @@
 import * as fs from 'fs';
+import path from 'path';
 import exit from 'process';
+import { getCustomConfigPath } from './config-unpacker-esm.js';
 
 export {
     loadFiles,
@@ -72,17 +74,20 @@ let HINTED = [];
 let jsonItems;
 
 function loadFiles() {
-    SELF_FIND = loadJson('customConfig/messages/selfFind.json');
-    OFF_COOLDOWN = loadJson('customConfig/messages/offCooldown.json');
-    LOCATION_FOUND = loadJson('customConfig/messages/locationFound.json');
-    ITEM_MISSED = loadJson('customConfig/messages/itemMissed.json');
-    ITEM_FOUND = loadJson('customConfig/messages/itemFound.json');
-    ITEM_RECIEVED = loadJson('customConfig/messages/itemRecieved.json');
-    BOUNCED = loadJson('customConfig/messages/bounced.json'); //deathlink get
-    ITEM_TRAP = loadJson('customConfig/messages/itemTrap.json');
-    BOUNCE = loadJson('customConfig/messages/bounce.json'); //deathlink send to everyone
-    KILLER = loadJson('customConfig/messages/theKiller.json');
-    HINTED = loadJson("customConfig/messages/hintedItem.json");
+    // Use unpacked config path if running as pkg, otherwise use local path
+    const customConfigPath = getCustomConfigPath();
+    
+    SELF_FIND = loadJson(path.join(customConfigPath, 'messages/selfFind.json'));
+    OFF_COOLDOWN = loadJson(path.join(customConfigPath, 'messages/offCooldown.json'));
+    LOCATION_FOUND = loadJson(path.join(customConfigPath, 'messages/locationFound.json'));
+    ITEM_MISSED = loadJson(path.join(customConfigPath, 'messages/itemMissed.json'));
+    ITEM_FOUND = loadJson(path.join(customConfigPath, 'messages/itemFound.json'));
+    ITEM_RECIEVED = loadJson(path.join(customConfigPath, 'messages/itemRecieved.json'));
+    BOUNCED = loadJson(path.join(customConfigPath, 'messages/bounced.json')); //deathlink get
+    ITEM_TRAP = loadJson(path.join(customConfigPath, 'messages/itemTrap.json'));
+    BOUNCE = loadJson(path.join(customConfigPath, 'messages/bounce.json')); //deathlink send to everyone
+    KILLER = loadJson(path.join(customConfigPath, 'messages/theKiller.json'));
+    HINTED = loadJson(path.join(customConfigPath, "messages/hintedItem.json"));
 }
 
 function myCallback() {

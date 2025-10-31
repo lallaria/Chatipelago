@@ -6,6 +6,7 @@ import * as config from './config.js';
 import * as webhook from './webhook-put.js';
 import { init as initializeBot } from './bot-get.js';
 import { fileURLToPath } from 'url';
+import { getCustomConfigPath } from './config-unpacker-esm.js';
 
 // Load config immediately so we can check it
 config.loadFiles();
@@ -79,8 +80,9 @@ webhook.setStreamerbotClient(streamerbotclient);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// Monitor for restart signals
-const restartSignalPath = path.join(__dirname, 'tmp', 'restart_signal');
+// Monitor for restart signals - use unpacked config path
+const customConfigPath = getCustomConfigPath();
+const restartSignalPath = path.join(customConfigPath, 'tmp', 'restart_signal');
 let lastRestartSignal = null;
 
 async function checkForRestartSignal() {

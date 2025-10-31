@@ -9,6 +9,16 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const { unpackConfig } = require('./config-unpacker');
+
+// Unpack config files on startup (if running as pkg executable)
+if (process.pkg) {
+  try {
+    unpackConfig();
+  } catch (error) {
+    console.error('Error unpacking config files:', error);
+  }
+}
 
 // In pkg, __dirname works but points to the snapshot directory
 // For spawned files, we need to use the actual executable directory

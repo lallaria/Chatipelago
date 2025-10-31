@@ -2,14 +2,19 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import fs from 'fs/promises';
+import fssync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import yaml from 'yaml';
+import { getCustomConfigPath, getConfigDir } from './config-unpacker-esm.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.join(path.dirname(__filename), 'customConfig');
 const __projectRoot = path.dirname(__filename);
+
+// Use unpacked config path if running as pkg, otherwise use local path
+const customConfigPath = getCustomConfigPath();
+const __dirname = customConfigPath;
 
 const app = express();
 const PORT = 8015;
@@ -26,8 +31,13 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Multer configuration for file uploads
+const tmpDir = path.join(__dirname, 'tmp');
+if (!fssync.existsSync(tmpDir)) {
+  fssync.mkdirSync(tmpDir, { recursive: true });
+}
+
 const upload = multer({
-  dest: path.join(__dirname, 'tmp'),
+  dest: tmpDir,
   limits: {
     fileSize: 1024 * 1024 // 1MB limit
   },
@@ -250,6 +260,7 @@ function restartChatipelago() {
   console.log('Restarting Chatipelago client...');
   
   // Write a restart signal file that the main process can monitor
+  // Use unpacked config path (already set as __dirname)
   const restartSignalPath = path.join(__dirname, 'tmp', 'restart_signal');
   fs.writeFile(restartSignalPath, Date.now().toString(), 'utf8')
     .then(() => {

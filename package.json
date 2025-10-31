@@ -35,6 +35,8 @@
       "bot-get.js",
       "webhook-put.js",
       "config.js",
+      "config-unpacker.js",
+      "config-unpacker-esm.js",
       "apWorldSettings.js",
       "archipelagoHelper.js",
       "messageUtil.js",
