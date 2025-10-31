@@ -3,14 +3,17 @@
 /**
  * Launcher for Chatipelago executable build
  * This version works with pkg by using process.execPath instead of spawning 'node'
+ * Uses CommonJS to avoid pkg ES module issues
  */
 
-import { spawn } from 'child_process';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// In pkg, __dirname works but points to the snapshot directory
+// For spawned files, we need to use the actual executable directory
+const execDir = path.dirname(process.execPath);
+const workingDir = process.cwd();
 
 console.log('Starting Chatipelago with Admin API...');
 
@@ -24,10 +27,20 @@ const nodeExecutable = process.execPath;
 function startMainClient() {
   console.log('Starting main Chatipelago client...');
   
-  const serverPath = path.join(__dirname, 'server.js');
+  // Look for server.js in the executable directory or current working directory
+  let serverPath = path.join(execDir, 'server.js');
+  if (!fs.existsSync(serverPath)) {
+    serverPath = path.join(workingDir, 'server.js');
+  }
+  if (!fs.existsSync(serverPath)) {
+    // Fallback: try relative to this file's location (when unpacked)
+    serverPath = path.join(__dirname, 'server.js');
+  }
+  
+  const serverDir = path.dirname(serverPath);
   
   mainClient = spawn(nodeExecutable, [serverPath], {
-    cwd: __dirname,
+    cwd: serverDir,
     stdio: ['inherit', 'pipe', 'pipe']
   });
 
@@ -56,9 +69,19 @@ function startMainClient() {
 startMainClient();
 
 // Start the admin server
-const adminServerPath = path.join(__dirname, 'admin-server.js');
+// Look for admin-server.js in the executable directory or current working directory
+let adminServerPath = path.join(execDir, 'admin-server.js');
+if (!fs.existsSync(adminServerPath)) {
+  adminServerPath = path.join(workingDir, 'admin-server.js');
+}
+if (!fs.existsSync(adminServerPath)) {
+  // Fallback: try relative to this file's location (when unpacked)
+  adminServerPath = path.join(__dirname, 'admin-server.js');
+}
+
+const adminServerDir = path.dirname(adminServerPath);
 adminServer = spawn(nodeExecutable, [adminServerPath], {
-  cwd: __dirname,
+  cwd: adminServerDir,
   stdio: ['inherit', 'pipe', 'pipe']
 });
 
