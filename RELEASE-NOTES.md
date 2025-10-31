@@ -1,7 +1,7 @@
-# Chatipelago v1.1.3 - Make it User Friendlish
+# Chatipelago v1.1.8 - Unified Application & Standalone Executables
 
-**Release Date:** January 2025  
-**Version:** 1.1.3
+**Release Date:** October 2025  
+**Version:** 1.1.8
 **License:** MIT
 
 ## Overview
@@ -82,7 +82,7 @@ All messages support variable substitution and random selection from multiple va
 **DeathLink Mechanic**
 - Random death chance on trap items (60% probability)
 - Configurable DeathLink integration
-- Custom death messages with thesaurus-based variety
+- Custom death messages with inline synonym variety (removed external thesaurus dependency)
 
 **Countdown Mode**
 - Reactivatable countdown system
@@ -98,10 +98,12 @@ All messages support variable substitution and random selection from multiple va
 
 ### Architecture
 - Node.js 18+ with ES modules
-- Dual-server architecture:
-  - Main client (server.js) - handles Archipelago connection and chat integration
-  - Admin server (admin-server.js) - provides management API
-- Process management via `start-chatipelago.js` with auto-restart
+- Unified application architecture:
+  - Single process (app.js) - combines Archipelago connection, chat integration, and admin API
+  - Integrated admin server with hot restart capability
+  - Config unpacker system for standalone executable environments
+- Single Executable Application (SEA) support via Node.js experimental SEA feature
+- Standalone executable build system with esbuild bundling
 
 ### Dependencies
 - `archipelago.js` v2.0.4 - Archipelago protocol client
@@ -111,31 +113,44 @@ All messages support variable substitution and random selection from multiple va
 - `multer` v2.0.2 - File upload handling
 - `cors` v2.8.5 - Cross-origin resource sharing
 - `yaml` v2.3.4 - YAML parsing
-- `thesaurus` v0.0.1 - DeathLink message variety
 - `busboy` v1.6.0 - HTTP POST parsing
 - `decompress` v4.2.1 - Archive handling
 - `shelljs` v0.9.1 - Shell command execution
+
+### Build Dependencies
+- `esbuild` v0.25.0 - Code bundling for standalone executables
+- `postject` v1.0.0-alpha.6 - SEA blob injection tool
 
 ### Cross-Platform Support
 - Windows x64
 - Linux x64  
 - macOS x64
 
-Built-in support for standalone executables via `pkg`.
+### Standalone Executable Support
+- Single Executable Application (SEA) build system using Node.js experimental SEA feature
+- Build command: `npm run build` creates platform-specific standalone executables
+- Bundles all code and dependencies into a single executable file
+- Config unpacker automatically extracts configuration at runtime
+- No Node.js installation required for end users
 
 ## Files & Directory Structure
 
 ```
 Chatipelago/
-├── server.js              # Main client server
-├── admin-server.js        # Admin API server
-├── start-chatipelago.js   # Process manager
+├── app.js                 # Unified application (client + admin API)
+├── server.js              # Legacy server (maintained for reference)
 ├── bot-get.js             # Command processing logic
 ├── webhook-put.js         # Chat message posting
 ├── archipelagoHelper.js   # Archipelago client wrapper
 ├── messageUtil.js         # Message template system
 ├── config.js              # Configuration loader
+├── config-unpacker.cjs    # Config extraction for standalone builds
+├── config-unpacker-esm.js # ESM wrapper for config unpacker
 ├── apWorldSettings.js     # World configuration
+├── scripts/
+│   ├── build-bundle.js    # esbuild bundling script
+│   └── inject-sea.js      # SEA blob injection script
+├── sea-config.json        # Node.js SEA configuration
 ├── customConfig/
 │   ├── config.json        # User configuration
 │   ├── messages/          # Message templates
@@ -146,11 +161,18 @@ Chatipelago/
 
 ## Getting Started
 
+### Standard Installation
 1. Install dependencies: `npm install`
 2. Configure `customConfig/config.json` with your settings
 3. Set up Streamer.bot or MixItUp integration
-4. Start the server: `npm start`
+4. Start the application: `npm start`
 5. Connect via `!chaticonnect` in chat
+
+### Standalone Executable Build
+1. Install dependencies: `npm install`
+2. Build standalone executable: `npm run build`
+3. Run the generated executable (`chatipelago.exe` on Windows, `chatipelago` on Linux/macOS)
+4. Configuration is automatically extracted to appropriate platform directories
 
 For detailed setup instructions, see ADMIN-API.md and README.md.
 
@@ -160,14 +182,28 @@ For detailed setup instructions, see ADMIN-API.md and README.md.
 - Admin API requires additional frontend for full functionality
 - Item cache persistence depends on seed name and player name
 - Goal completion triggers game end after 10-second delay
+- Standalone executables require Node.js during build process
+- SEA builds are platform-specific (Windows, Linux, macOS builds are separate)
 
-## Future Enhancements
+## What's New in v1.1.8
 
-Phase 0 complete. The system is ready for:
-- Full web-based admin interface
-- Enhanced message customization UI
-- Advanced statistics tracking
-- Multiple game mode support
+### Major Changes
+- **Unified Application**: Combined server and admin API into single `app.js` process for simplified deployment
+- **Standalone Executable Support**: Added Node.js Single Executable Application (SEA) build system
+  - Creates platform-specific standalone executables with `npm run build`
+  - No Node.js installation required for end users
+  - Automatic configuration extraction at runtime
+- **Config Unpacker System**: New config extraction system for standalone executable environments
+- **Build System Improvements**: 
+  - esbuild-based code bundling
+  - postject-based SEA blob injection
+  - Cross-platform executable generation (Windows, Linux, macOS)
+
+### Architecture Improvements
+- Simplified process management (no separate process manager needed)
+- Unified console logging system
+- Improved hot restart capability
+
 
 ## Contributors
 

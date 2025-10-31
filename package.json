@@ -10,7 +10,8 @@
     "admin": "node admin-server.js",
     "client": "node server.js",
     "build:bundle": "node scripts/build-bundle.js",
-    "build:sea": "node --experimental-sea-config sea-config.json",
+    "build:sea-config": "node scripts/generate-sea-config.js",
+    "build:sea": "npm run build:sea-config && node --experimental-sea-config sea-config.json",
     "build": "npm run build:bundle && npm run build:sea && node scripts/inject-sea.js"
   },
   "repository": {

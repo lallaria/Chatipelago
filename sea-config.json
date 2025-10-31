@@ -1,5 +1,18 @@
 {
   "main": "dist/app-bundle.js",
-  "output": "sea-prep.blob"
+  "output": "sea-prep.blob",
+  "assets": {
+    "config.json": "customConfig/config.json",
+    "messages/bounce.json": "customConfig/messages/bounce.json",
+    "messages/bounced.json": "customConfig/messages/bounced.json",
+    "messages/hintedItem.json": "customConfig/messages/hintedItem.json",
+    "messages/itemFound.json": "customConfig/messages/itemFound.json",
+    "messages/itemMissed.json": "customConfig/messages/itemMissed.json",
+    "messages/itemRecieved.json": "customConfig/messages/itemRecieved.json",
+    "messages/itemTrap.json": "customConfig/messages/itemTrap.json",
+    "messages/locationFound.json": "customConfig/messages/locationFound.json",
+    "messages/offCooldown.json": "customConfig/messages/offCooldown.json",
+    "messages/selfFind.json": "customConfig/messages/selfFind.json",
+    "messages/theKiller.json": "customConfig/messages/theKiller.json"
+  }
 }
-
