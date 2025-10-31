@@ -98,29 +98,43 @@ if (process.platform === 'darwin') {
 
 execSync(postjectCmd, { stdio: 'inherit', cwd: rootDir });
 
-// Set icon on Windows
-(async () => {
-  if (process.platform === 'win32') {
-    const iconPath = join(rootDir, 'chati.ico');
-    if (existsSync(iconPath)) {
-      console.log('Setting executable icon...');
-      try {
-        // Add timeout to prevent infinite hangs (30 seconds)
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Icon setting timed out after 30 seconds')), 30000)
-        );
-        await Promise.race([
-          rcedit(outputExe, { icon: iconPath }),
-          timeoutPromise
-        ]);
-        console.log('Icon set successfully');
-      } catch (error) {
-        console.warn(`Warning: Failed to set icon: ${error.message}`);
-      }
-    } else {
-      console.warn(`Warning: Icon file not found at ${iconPath}`);
+// Set icon on Windows (optional - skip if it fails or times out)
+if (process.platform === 'win32') {
+  const iconPath = join(rootDir, 'chati.ico');
+  console.log(`[DEBUG] Looking for icon at: ${iconPath}`);
+  console.log(`[DEBUG] Root directory: ${rootDir}`);
+  console.log(`[DEBUG] Icon file exists: ${existsSync(iconPath)}`);
+  
+  if (existsSync(iconPath)) {
+    console.log('Setting executable icon...');
+    console.log(`[DEBUG] Using icon file: ${iconPath}`);
+    console.log(`[DEBUG] Target executable: ${outputExe}`);
+    try {
+      // Use Promise.race with timeout to prevent infinite hangs
+      const iconPromise = rcedit(outputExe, { icon: iconPath });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout after 30 seconds')), 30000)
+      );
+      
+      await Promise.race([iconPromise, timeoutPromise]);
+      console.log('Icon set successfully');
+    } catch (error) {
+      // Non-fatal: continue build even if icon setting fails
+      console.warn(`Warning: Failed to set icon: ${error.message}`);
+      console.warn(`[DEBUG] Icon path attempted: ${iconPath}`);
+      console.warn(`[DEBUG] Executable path: ${outputExe}`);
+      console.warn(`[DEBUG] Error details:`, error);
     }
+  } else {
+    console.warn(`Warning: Icon file not found - skipping icon setting`);
+    console.warn(`[DEBUG] Looked for icon at: ${iconPath}`);
+    console.warn(`[DEBUG] Root directory: ${rootDir}`);
+    console.warn(`[DEBUG] Current working directory: ${process.cwd()}`);
   }
-  console.log(`\n✓ Single executable created: ${outputExe}`);
-})();
+}
+
+console.log(`\n✓ Single executable created: ${outputExe}`);
+
+// Explicitly exit to ensure process doesn't hang
+process.exit(0);
 
