@@ -17,12 +17,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        node-version: [20.x, 22.x]
-        exclude:
-          # macOS builds are slower, only build latest Node
-          - os: macos-latest
-            node-version: 20.x
-    name: Build on ${{ matrix.os }} with Node ${{ matrix.node-version }}
+    name: Build on ${{ matrix.os }}
     
     steps:
       - name: Checkout code
@@ -31,11 +26,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '22.x'
           cache: 'npm'
       
       - name: Install dependencies
         run: npm ci
+      
+      - name: Get version from package.json
+        id: package_version
+        shell: bash
+        run: |
+          VERSION=$(node -e "const pkg = JSON.parse(require('fs').readFileSync('./package.json', 'utf8')); console.log(pkg.version)")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
       
       - name: Build executable
         run: npm run build
@@ -58,44 +61,74 @@ jobs:
             ls -lh chatipelago
           fi
       
-      - name: Create zip archive (Windows)
+      - name: Create tar.gz archive (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $zipName = "chatipelago-windows-node${{ matrix.node-version }}.zip"
-          $filesToZip = @('chatipelago.exe', 'README.md', 'LICENSE') | Where-Object { Test-Path $_ }
-          if ($filesToZip.Count -eq 0) {
-            Write-Error "No files found to zip"
+          $archiveName = "chatipelago-windows-${{ steps.package_version.outputs.version }}.tar.gz"
+          $filesToArchive = @('chatipelago.exe', 'README.md', 'LICENSE') | Where-Object { Test-Path $_ }
+          if ($filesToArchive.Count -eq 0) {
+            Write-Error "No files found to archive"
             exit 1
           }
-          Get-ChildItem $filesToZip | Compress-Archive -DestinationPath $zipName -Force
-          Write-Host "Created: $zipName ($(Get-Item $zipName | Select-Object -ExpandProperty Length) bytes)"
+          tar -czf $archiveName $filesToArchive
+          Write-Host "Created: $archiveName ($(Get-Item $archiveName | Select-Object -ExpandProperty Length) bytes)"
       
-      - name: Create zip archive (Unix)
+      - name: Determine OS name and archive format
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          ZIP_NAME="chatipelago-${{ matrix.os }}-node${{ matrix.node-version }}.zip"
-          zip -r "$ZIP_NAME" chatipelago README.md LICENSE 2>/dev/null || {
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            OS_NAME="ubuntu"
+            ARCHIVE_EXT="zip"
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            OS_NAME="macos"
+            ARCHIVE_EXT="tar.gz"
+          else
+            OS_NAME="${{ matrix.os }}"
+            ARCHIVE_EXT="zip"
+          fi
+          echo "OS_NAME=${OS_NAME}" >> $GITHUB_ENV
+          echo "ARCHIVE_EXT=${ARCHIVE_EXT}" >> $GITHUB_ENV
+      
+      - name: Create zip archive (Ubuntu)
+        if: runner.os != 'Windows' && env.ARCHIVE_EXT == 'zip'
+        shell: bash
+        run: |
+          ARCHIVE_NAME="chatipelago-${{ env.OS_NAME }}-${{ steps.package_version.outputs.version }}.zip"
+          zip -r "$ARCHIVE_NAME" chatipelago README.md LICENSE 2>/dev/null || {
             echo "Error: Failed to create zip archive"
             exit 1
           }
-          echo "Created: $ZIP_NAME ($(stat -f%z "$ZIP_NAME" 2>/dev/null || stat -c%s "$ZIP_NAME" 2>/dev/null || echo 'unknown') bytes)"
+          echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
+          echo "Created: $ARCHIVE_NAME ($(stat -c%s "$ARCHIVE_NAME" 2>/dev/null || echo 'unknown') bytes)"
       
-      - name: Upload zip archive (Windows)
+      - name: Create tar.gz archive (macOS)
+        if: runner.os != 'Windows' && env.ARCHIVE_EXT == 'tar.gz'
+        shell: bash
+        run: |
+          ARCHIVE_NAME="chatipelago-${{ env.OS_NAME }}-${{ steps.package_version.outputs.version }}.tar.gz"
+          tar -czf "$ARCHIVE_NAME" chatipelago README.md LICENSE || {
+            echo "Error: Failed to create tar.gz archive"
+            exit 1
+          }
+          echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
+          echo "Created: $ARCHIVE_NAME ($(stat -f%z "$ARCHIVE_NAME" 2>/dev/null || stat -c%s "$ARCHIVE_NAME" 2>/dev/null || echo 'unknown') bytes)"
+      
+      - name: Upload tar.gz archive (Windows)
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: chatipelago-windows-node${{ matrix.node-version }}
-          path: chatipelago-windows-node${{ matrix.node-version }}.zip
+          name: chatipelago-windows-${{ steps.package_version.outputs.version }}
+          path: chatipelago-windows-${{ steps.package_version.outputs.version }}.tar.gz
           retention-days: 30
       
-      - name: Upload zip archive (Unix)
+      - name: Upload archive (Unix)
         if: runner.os != 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: chatipelago-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: chatipelago-${{ matrix.os }}-node${{ matrix.node-version }}.zip
+          name: chatipelago-${{ env.OS_NAME }}-${{ steps.package_version.outputs.version }}
+          path: chatipelago-${{ env.OS_NAME }}-${{ steps.package_version.outputs.version }}.${{ env.ARCHIVE_EXT }}
           retention-days: 30
 
   release:

@@ -1,0 +1,66 @@
+name: Tag on package.json version
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect new version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ -z "$VERSION" ]]; then
+            echo "No version found in package.json" >&2
+            exit 1
+          fi
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid semver in package.json: $VERSION" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: check
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          echo "Checking for tag $TAG"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            # Also check remote just in case
+            if git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1; then
+              echo "exists=true" >> $GITHUB_OUTPUT
+            else
+              echo "exists=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Setup Git identity
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        if: steps.check.outputs.exists == 'false'
+        env:
+          TAG: v${{ steps.version.outputs.version }}
+        run: |
+          git tag "$TAG" -m "$TAG"
+          git push origin "$TAG"
+
+

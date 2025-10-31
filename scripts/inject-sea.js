@@ -3,6 +3,7 @@ import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readdirSync } from 'fs';
+import rcedit from 'rcedit';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -97,5 +98,28 @@ if (process.platform === 'darwin') {
 
 execSync(postjectCmd, { stdio: 'inherit', cwd: rootDir });
 
-console.log(`\n✓ Single executable created: ${outputExe}`);
+// Set icon on Windows
+if (process.platform === 'win32') {
+  const iconPath = join(rootDir, 'chati.ico');
+  if (existsSync(iconPath)) {
+    console.log('Setting executable icon...');
+    rcedit(outputExe, {
+      icon: iconPath
+    })
+      .then(() => {
+        console.log('Icon set successfully');
+        console.log(`\n✓ Single executable created: ${outputExe}`);
+      })
+      .catch((error) => {
+        console.warn(`Warning: Failed to set icon: ${error.message}`);
+        // Continue even if icon setting fails
+        console.log(`\n✓ Single executable created: ${outputExe}`);
+      });
+  } else {
+    console.warn(`Warning: Icon file not found at ${iconPath}`);
+    console.log(`\n✓ Single executable created: ${outputExe}`);
+  }
+} else {
+  console.log(`\n✓ Single executable created: ${outputExe}`);
+}
 
