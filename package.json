@@ -1,14 +1,17 @@
 {
   "name": "chatipelago",
-  "version": "1.0.0",
+  "version": "1.1.7",
   "description": "Chatipelago",
-  "main": "server.js",
+  "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "node start-chatipelago.js",
-    "dev": "node start-chatipelago.js",
+    "start": "node app.js",
+    "dev": "node app.js",
     "admin": "node admin-server.js",
-    "client": "node server.js"
+    "client": "node server.js",
+    "build:bundle": "node scripts/build-bundle.js",
+    "build:sea": "node --experimental-sea-config sea-config.json",
+    "build": "npm run build:bundle && npm run build:sea && node scripts/inject-sea.js"
   },
   "repository": {
     "type": "git",
@@ -23,31 +26,9 @@
   },
   "homepage": "https://github.com/lallaria/Chatipelago#readme",
   "devDependencies": {
+    "esbuild": "^0.19.0",
     "eslint": "^8.57.1",
-    "pkg": "^5.8.1"
-  },
-  "pkg": {
-    "assets": [
-      "customConfig/**/*",
-      "icon.png",
-      "server.js",
-      "admin-server.js",
-      "bot-get.js",
-      "webhook-put.js",
-      "config.js",
-      "config-unpacker.js",
-      "config-unpacker-esm.js",
-      "apWorldSettings.js",
-      "archipelagoHelper.js",
-      "messageUtil.js",
-      "node_modules/**/*"
-    ],
-    "targets": [
-      "node18-win-x64",
-      "node18-linux-x64",
-      "node18-macos-x64"
-    ],
-    "outputPath": "dist"
+    "postject": "^1.0.0-alpha.6"
   },
   "eslintConfig": {
     "env": {
@@ -63,13 +44,12 @@
     "@streamerbot/client": "^1.12.2",
     "archipelago.js": "^2.0.4",
     "busboy": "^1.6.0",
-    "decompress": "^4.2.1",
-    "shelljs": "^0.9.1",
-    "thesaurus": "^0.0.1",
-    "ws": "^8.18.0",
-    "express": "^4.18.2",
     "cors": "^2.8.5",
+    "decompress": "^4.2.1",
+    "express": "^4.18.2",
     "multer": "^2.0.2",
+    "shelljs": "^0.9.1",
+    "ws": "^8.18.0",
     "yaml": "^2.3.4"
   }
 }

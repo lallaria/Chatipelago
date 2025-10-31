@@ -1,25 +1,148 @@
+#!/usr/bin/env node
+
+/**
+ * Unified Chatipelago application
+ * Combines server.js and admin-server.js into a single process
+ */
+
+import { StreamerbotClient } from '@streamerbot/client';
+import * as http from 'http';
+import * as path from 'path';
+import * as fs from 'fs/promises';
+import * as config from './config.js';
+import * as webhook from './webhook-put.js';
+import { init as initializeBot } from './bot-get.js';
+import { fileURLToPath } from 'url';
+import { getCustomConfigPath } from './config-unpacker-esm.js';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import fs from 'fs/promises';
 import fssync from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
-import yaml from 'yaml';
-import { getCustomConfigPath, getConfigDir } from './config-unpacker-esm.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __projectRoot = path.dirname(__filename);
-
-// Use unpacked config path if running as nexe executable, otherwise use local path
+const __dirname = path.dirname(__filename);
 const customConfigPath = getCustomConfigPath();
-const __dirname = customConfigPath;
 
+// Load config immediately
+config.loadFiles();
+
+// Shared console log listeners for SSE
+const consoleListeners = new Set();
+
+// Console log capture - unified for both server and admin
+const originalConsoleLog = console.log;
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+function createLogInterceptor(original, level) {
+  return (...args) => {
+    const message = args.map(arg => 
+      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+    ).join(' ');
+    
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      message: message,
+      level: level
+    };
+    
+    // Send to all SSE listeners
+    consoleListeners.forEach(res => {
+      try {
+        res.write(`data: ${JSON.stringify(logEntry)}\n\n`);
+      } catch (error) {
+        consoleListeners.delete(res);
+      }
+    });
+    
+    // Call original console method
+    original(...args);
+  };
+}
+
+console.log = createLogInterceptor(originalConsoleLog, 'log');
+console.error = createLogInterceptor(originalConsoleError, 'error');
+console.warn = createLogInterceptor(originalConsoleWarn, 'warn');
+
+// Initialize Streamerbot client
+const streamerbotclient = new StreamerbotClient(config.streamerbotConfig);
+webhook.setStreamerbotClient(streamerbotclient);
+
+// Restart signal monitoring
+const restartSignalPath = path.join(customConfigPath, 'tmp', 'restart_signal');
+let lastRestartSignal = null;
+
+async function checkForRestartSignal() {
+  try {
+    const signalData = await fs.readFile(restartSignalPath, 'utf8');
+    const signalTime = parseInt(signalData);
+    
+    if (lastRestartSignal !== signalTime) {
+      lastRestartSignal = signalTime;
+      console.log('Restart signal detected, exiting for restart...');
+      process.exit(0);
+    }
+  } catch (error) {
+    // File doesn't exist or can't be read, that's fine
+  }
+}
+
+// Check for restart signals every 2 seconds
+setInterval(checkForRestartSignal, 2000);
+
+// Export functions for bot integration
+export { setOnEvent, sayGoodBye };
+
+var onEvent;
+
+function setOnEvent(fct) {
+  onEvent = fct;
+}
+
+function sayGoodBye() {
+  process.exit();
+}
+
+// Streamer.bot command handler
+if (config.streamerbot) {
+  try {
+    initializeBot();
+  } catch (e) {
+    console.error('[Bot Init] Failed to initialize:', e?.message || e);
+  }
+
+  streamerbotclient.on('Command.Triggered', (data) => {
+    const payload = data?.data || data;
+    const command = payload?.command;
+    const name = payload?.name;
+    const message = (payload?.message || '').trim();
+    const args = message.length > 0 ? message.split(/\s+/) : [];
+
+    if (name === 'ChatiChat' || name === 'ChatiMod') {
+      if (typeof onEvent === 'function') {
+        onEvent(`/${command}${args.length ? '+' + args.join('+') : ''}`);
+      } else {
+        console.log('[Streamer.bot] onEvent handler not ready');
+      }
+    }
+  });
+}
+
+// Mixitup HTTP server
+if (config.mixitup) {
+  const port = process.env.PORT || 8013;
+  http.createServer((req, res) => {
+    onEvent(req.url);
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end('Hello, World\n');
+  }).listen(port);
+  console.log(`Mixitup HTTP server listening on port ${port}`);
+}
+
+// Express Admin API
 const app = express();
-const PORT = 8015;
+const ADMIN_PORT = 8015;
 
-// CORS configuration for chati.prismativerse.com
 const corsOptions = {
   origin: 'https://chati.prismativerse.com',
   credentials: true,
@@ -31,16 +154,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Multer configuration for file uploads
-const tmpDir = path.join(__dirname, 'tmp');
+const tmpDir = path.join(customConfigPath, 'tmp');
 if (!fssync.existsSync(tmpDir)) {
   fssync.mkdirSync(tmpDir, { recursive: true });
 }
 
 const upload = multer({
   dest: tmpDir,
-  limits: {
-    fileSize: 1024 * 1024 // 1MB limit
-  },
+  limits: { fileSize: 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/x-yaml' || 
         file.originalname.endsWith('.yaml') || 
@@ -52,41 +173,10 @@ const upload = multer({
   }
 });
 
-// Store console log listeners for SSE
-const consoleListeners = new Set();
-
-// Console log capture
-const originalConsoleLog = console.log;
-console.log = (...args) => {
-  const message = args.map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-  ).join(' ');
-  
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    message: message,
-    level: 'log'
-  };
-  
-  // Send to all SSE listeners
-  consoleListeners.forEach(res => {
-    try {
-      res.write(`data: ${JSON.stringify(logEntry)}\n\n`);
-    } catch (error) {
-      consoleListeners.delete(res);
-    }
-  });
-  
-  // Call original console.log
-  originalConsoleLog(...args);
-};
-
 // API Routes
-
-// Configuration endpoints
 app.get('/api/config', async (req, res) => {
   try {
-    const configPath = path.join(__dirname, 'config.json');
+    const configPath = path.join(customConfigPath, 'config.json');
     const configData = await fs.readFile(configPath, 'utf8');
     const config = JSON.parse(configData);
     res.json(config);
@@ -98,13 +188,10 @@ app.get('/api/config', async (req, res) => {
 
 app.put('/api/config', async (req, res) => {
   try {
-    const configPath = path.join(__dirname, 'config.json');
+    const configPath = path.join(customConfigPath, 'config.json');
     const configData = JSON.stringify(req.body, null, 2);
     await fs.writeFile(configPath, configData, 'utf8');
-    
-    // Trigger restart of main Chatipelago process
     restartChatipelago();
-    
     res.json({ success: true, message: 'Configuration updated and client restarted' });
   } catch (error) {
     console.error('Error writing config:', error);
@@ -112,10 +199,9 @@ app.put('/api/config', async (req, res) => {
   }
 });
 
-// Message file endpoints
 app.get('/api/messages', async (req, res) => {
   try {
-    const messagesDir = path.join(__dirname, 'messages');
+    const messagesDir = path.join(customConfigPath, 'messages');
     const files = await fs.readdir(messagesDir);
     const jsonFiles = files.filter(file => file.endsWith('.json'));
     res.json(jsonFiles);
@@ -132,12 +218,9 @@ app.get('/api/messages/:filename', async (req, res) => {
       return res.status(400).json({ error: 'Invalid file type' });
     }
     
-    const filePath = path.join(__dirname, 'messages', filename);
+    const filePath = path.join(customConfigPath, 'messages', filename);
     const fileData = await fs.readFile(filePath, 'utf8');
     const jsonData = JSON.parse(fileData);
-    
-    // If the file is an array, wrap it in an object with 'messages' property
-    // This maintains backward compatibility with old array format
     const responseData = Array.isArray(jsonData) 
       ? { messages: jsonData } 
       : jsonData;
@@ -156,19 +239,14 @@ app.put('/api/messages/:filename', async (req, res) => {
       return res.status(400).json({ error: 'Invalid file type' });
     }
     
-    const filePath = path.join(__dirname, 'messages', filename);
-    
-    // If the request body has a 'messages' property, extract it
-    // Otherwise use the body as-is for backward compatibility
+    const filePath = path.join(customConfigPath, 'messages', filename);
     let dataToWrite = req.body;
     if (req.body && req.body.messages && Array.isArray(req.body.messages)) {
-      // Save as array format to maintain compatibility with existing code
       dataToWrite = req.body.messages;
     }
     
     const jsonData = JSON.stringify(dataToWrite, null, 2);
     await fs.writeFile(filePath, jsonData, 'utf8');
-    
     res.json({ success: true, message: 'Message file updated' });
   } catch (error) {
     console.error('Error writing message file:', error);
@@ -176,7 +254,6 @@ app.put('/api/messages/:filename', async (req, res) => {
   }
 });
 
-// Endpoint for main client to send logs
 app.post('/api/console/log', (req, res) => {
   const logEntry = {
     timestamp: req.body.timestamp || new Date().toISOString(),
@@ -184,7 +261,6 @@ app.post('/api/console/log', (req, res) => {
     level: req.body.level || 'log'
   };
   
-  // Send to all SSE listeners
   consoleListeners.forEach(listener => {
     try {
       listener.write(`data: ${JSON.stringify(logEntry)}\n\n`);
@@ -196,7 +272,6 @@ app.post('/api/console/log', (req, res) => {
   res.json({ success: true });
 });
 
-// Console log streaming via SSE
 app.get('/api/console', (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -206,23 +281,19 @@ app.get('/api/console', (req, res) => {
     'Access-Control-Allow-Credentials': 'true'
   });
 
-  // Add this response to listeners
   consoleListeners.add(res);
 
-  // Send initial connection message
   res.write(`data: ${JSON.stringify({
     timestamp: new Date().toISOString(),
     message: 'Connected to console stream',
     level: 'info'
   })}\n\n`);
 
-  // Handle client disconnect
   req.on('close', () => {
     consoleListeners.delete(res);
   });
 });
 
-// Status endpoint
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'connected',
@@ -232,7 +303,6 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// Restart endpoint
 app.post('/api/restart', (req, res) => {
   try {
     restartChatipelago();
@@ -243,10 +313,9 @@ app.post('/api/restart', (req, res) => {
   }
 });
 
-// Streamer.bot actions text endpoint
 app.get('/api/streamerbot/actions-text', async (req, res) => {
   try {
-    const actionsPath = path.join(__projectRoot, 'streamer.bot', 'chatipelago_streamer_bot_actions');
+    const actionsPath = path.join(__dirname, 'streamer.bot', 'chatipelago_streamer_bot_actions');
     const data = await fs.readFile(actionsPath, 'utf8');
     res.json({ text: data });
   } catch (error) {
@@ -255,25 +324,30 @@ app.get('/api/streamerbot/actions-text', async (req, res) => {
   }
 });
 
-// Function to restart Chatipelago client
 function restartChatipelago() {
-  console.log('Restarting Chatipelago client...');
-  
-  // Write a restart signal file that the main process can monitor
-  // Use unpacked config path (already set as __dirname)
-  const restartSignalPath = path.join(__dirname, 'tmp', 'restart_signal');
+  console.log('Restarting Chatipelago...');
+  const restartSignalPath = path.join(customConfigPath, 'tmp', 'restart_signal');
   fs.writeFile(restartSignalPath, Date.now().toString(), 'utf8')
     .then(() => {
-      console.log('Restart signal written, main process should restart shortly...');
+      console.log('Restart signal written, process should restart shortly...');
     })
     .catch((error) => {
       console.error('Failed to write restart signal:', error);
     });
 }
 
-// Create tmp directory if it doesn't exist
+// Start admin server
+async function startServer() {
+  await ensureTmpDir();
+  
+  app.listen(ADMIN_PORT, () => {
+    console.log(`Admin API server running on port ${ADMIN_PORT}`);
+    console.log(`CORS enabled for: https://chati.prismativerse.com`);
+    console.log('Chatipelago started successfully!');
+  });
+}
+
 async function ensureTmpDir() {
-  const tmpDir = path.join(__dirname, 'tmp');
   try {
     await fs.access(tmpDir);
   } catch {
@@ -281,24 +355,14 @@ async function ensureTmpDir() {
   }
 }
 
-// Start server
-async function startServer() {
-  await ensureTmpDir();
-  
-  app.listen(PORT, () => {
-    console.log(`Admin API server running on port ${PORT}`);
-    console.log(`CORS enabled for: https://chati.prismativerse.com`);
-  });
-}
-
 // Handle graceful shutdown
 process.on('SIGINT', () => {
-  console.log('Shutting down admin server...');
+  console.log('\nShutting down Chatipelago...');
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('Shutting down admin server...');
+  console.log('\nShutting down Chatipelago...');
   process.exit(0);
 });
 

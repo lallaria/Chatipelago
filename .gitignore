@@ -90,6 +90,8 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
+sea-prep.blob
+chatipelago.exe
 
 # Gatsby files
 .cache/

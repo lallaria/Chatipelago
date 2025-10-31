@@ -8,7 +8,12 @@ import * as archipelagoHelper from './archipelagoHelper.js';
 import * as messageUtil from './messageUtil.js';
 import * as config from './config.js';
 
-import thesaurus from 'thesaurus';
+// Default synonyms for "demise" - replaced thesaurus dependency
+const DEMISE_SYNONYMS = [
+    'demise', 'death', 'end', 'doom', 'fate', 'destiny', 'downfall',
+    'destruction', 'ruin', 'perdition', 'extinction', 'annihilation',
+    'oblivion', 'termination', 'expiration', 'passing', 'departure'
+];
 
 export {init}
 
@@ -128,9 +133,7 @@ function notifyCooldown() {
 }
 
 function deathLink(player) {
-    let randAtk = thesaurus.find("demise");
-    console.log(randAtk);
-    let reason = `${player} met their ${messageUtil.getRandomIndex(randAtk)} by ${messageUtil.generateRandomText(messageUtil.KILLER)}!`
+    let reason = `${player} met their ${messageUtil.getRandomIndex(DEMISE_SYNONYMS)} by ${messageUtil.generateRandomText(messageUtil.KILLER)}!`
     webhook.postInChat(`Good luck everyone, @${reason}`, false, false);
     // currently_dead = true; // for testing
     currently_dead = false;

@@ -74,7 +74,7 @@ let HINTED = [];
 let jsonItems;
 
 function loadFiles() {
-    // Use unpacked config path if running as pkg, otherwise use local path
+    // Use unpacked config path if running as nexe executable, otherwise use local path
     const customConfigPath = getCustomConfigPath();
     
     SELF_FIND = loadJson(path.join(customConfigPath, 'messages/selfFind.json'));

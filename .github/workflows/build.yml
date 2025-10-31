@@ -1,9 +1,12 @@
-name: Build Executables
+name: Build Executable
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ created ]
   workflow_dispatch:
 
 jobs:
@@ -12,214 +15,59 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        include:
-          - os: windows-latest
-            platform: win
-            extension: .exe
-          - os: ubuntu-latest
-            platform: linux
-            extension: ''
+        node-version: [20.x, 22.x]
+        exclude:
+          # macOS builds are slower, only build latest Node
           - os: macos-latest
-            platform: macos
-            extension: ''
+            node-version: 20.x
+    name: Build on ${{ matrix.os }} with Node ${{ matrix.node-version }}
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
-
+      
       - name: Install dependencies
         run: npm ci
-
+      
       - name: Build executable
-        run: |
-          echo "Building for ${{ matrix.platform }}..."
-          echo "Current directory: $(pwd)"
-          echo "Checking if chatipelago-launcher.js exists:"
-          ls -la chatipelago-launcher.js || echo "chatipelago-launcher.js not found"
-          echo "Checking if config-unpacker.js exists:"
-          ls -la config-unpacker.js || echo "config-unpacker.js not found"
-          
-          # Create dist directory if it doesn't exist
-          mkdir -p dist
-          
-          # Build with error handling
-          echo "Starting pkg build..."
-          set +e  # Don't exit on error yet, we want to see the output
-          npx pkg chatipelago-launcher.js \
-            --targets node18-${{ matrix.platform }}-x64 \
-            --output-path dist/ \
-            2>&1 | tee build.log
-          BUILD_EXIT_CODE=$?
-          set -e
-          
-          echo "Build exit code: $BUILD_EXIT_CODE"
-          if [ -f build.log ]; then
-            echo "Build log contents:"
-            cat build.log
-          fi
-          
-          echo "Files in dist after build:"
-          ls -la dist/ 2>/dev/null || echo "dist directory empty or not found"
-          find dist -type f 2>/dev/null || echo "No files found in dist"
-          
-          # Verify executable was created
-          EXECUTABLE_FOUND=0
-          if [ "${{ matrix.platform }}" == "win" ]; then
-            if [ -f "dist/chatipelago-launcher.exe" ]; then
-              echo "✓ Windows executable found"
-              EXECUTABLE_FOUND=1
-            else
-              echo "✗ Windows executable NOT found"
-              find dist -name "*.exe" -type f 2>/dev/null || echo "No .exe files found"
-            fi
-          else
-            if [ -f "dist/chatipelago-launcher" ]; then
-              echo "✓ Unix executable found"
-              ls -lh dist/chatipelago-launcher
-              EXECUTABLE_FOUND=1
-            else
-              echo "✗ Unix executable NOT found"
-              find dist -type f -executable 2>/dev/null || find dist -type f 2>/dev/null || echo "No files found in dist"
-            fi
-          fi
-          
-          if [ $EXECUTABLE_FOUND -eq 0 ]; then
-            echo "ERROR: Executable was not created. Build may have failed."
-            if [ $BUILD_EXIT_CODE -ne 0 ]; then
-              echo "Build command exited with code $BUILD_EXIT_CODE"
-            fi
-            exit 1
-          fi
-        env:
-          PKG_CACHE_PATH: ${{ runner.temp }}/pkg-cache
-
-      - name: Find and move executable (Windows)
-        if: matrix.platform == 'win'
-        run: |
-          mkdir dist\chatipelago-win-x64
-          if exist "dist\chatipelago-launcher.exe" (
-            move dist\chatipelago-launcher.exe dist\chatipelago-win-x64\chatipelago.exe
-          ) else (
-            echo "Executable not found, listing dist contents:"
-            dir dist
-            exit /b 1
-          )
-          xcopy /E /I customConfig dist\chatipelago-win-x64\customConfig
-          copy icon.png dist\chatipelago-win-x64\
-          copy package.json dist\chatipelago-win-x64\
-          if exist README.md copy README.md dist\chatipelago-win-x64\
-        shell: cmd
-
-      - name: Find and move executable (Unix)
-        if: matrix.platform != 'win'
-        run: |
-          mkdir -p dist/chatipelago-${{ matrix.platform }}-x64
-          if [ -f "dist/chatipelago-launcher" ]; then
-            mv dist/chatipelago-launcher dist/chatipelago-${{ matrix.platform }}-x64/chatipelago
-          elif [ -f "dist/chatipelago-launcher-${{ matrix.platform }}-x64" ]; then
-            mv dist/chatipelago-launcher-${{ matrix.platform }}-x64 dist/chatipelago-${{ matrix.platform }}-x64/chatipelago
-          else
-            echo "Executable not found, listing dist contents:"
-            ls -la dist/
-            find dist -name "chatipelago-launcher*" -type f || exit 1
-            find dist -name "chatipelago-launcher*" -type f -exec mv {} dist/chatipelago-${{ matrix.platform }}-x64/chatipelago \;
-          fi
-          cp -r customConfig dist/chatipelago-${{ matrix.platform }}-x64/
-          cp icon.png dist/chatipelago-${{ matrix.platform }}-x64/
-          cp package.json dist/chatipelago-${{ matrix.platform }}-x64/
-          cp README.md dist/chatipelago-${{ matrix.platform }}-x64/ 2>/dev/null || true
-          # Also copy required JS files
-          cp server.js dist/chatipelago-${{ matrix.platform }}-x64/ 2>/dev/null || true
-          cp admin-server.js dist/chatipelago-${{ matrix.platform }}-x64/ 2>/dev/null || true
-
-      - name: Verify executable exists
-        run: |
-          if [ "${{ matrix.platform }}" == "win" ]; then
-            if not exist "dist\chatipelago-win-x64\chatipelago.exe" exit /b 1
-            dir dist\chatipelago-win-x64\chatipelago.exe
-          else
-            ls -lh "dist/chatipelago-${{ matrix.platform }}-x64/chatipelago" || find "dist/chatipelago-${{ matrix.platform }}-x64" -name "chatipelago" -type f
-          fi
+        run: npm run build
+      
+      - name: Verify executable
         shell: bash
-
-      - name: Create archive (Windows)
-        if: matrix.platform == 'win'
         run: |
-          echo "Contents of chatipelago-win-x64 before archiving:"
-          dir /s dist\chatipelago-win-x64
-          Compress-Archive -Path dist\chatipelago-win-x64\* -DestinationPath dist\chatipelago-win-x64.zip -Force
-          echo "Archive created:"
-          dir dist\chatipelago-win-x64.zip
-        shell: powershell
-
-      - name: Create archive (Unix)
-        if: matrix.platform != 'win'
-        run: |
-          cd dist/chatipelago-${{ matrix.platform }}-x64
-          chmod +x chatipelago
-          tar -czf ../chatipelago-${{ matrix.platform }}-x64.tar.gz *
-          ls -lh ../chatipelago-${{ matrix.platform }}-x64.tar.gz
-
-      - name: Upload executable
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            if [ ! -f "chatipelago.exe" ]; then
+              echo "Error: chatipelago.exe not found"
+              exit 1
+            fi
+            ls -lh chatipelago.exe
+          else
+            if [ ! -f "chatipelago" ]; then
+              echo "Error: chatipelago not found"
+              exit 1
+            fi
+            chmod +x chatipelago
+            ls -lh chatipelago
+          fi
+      
+      - name: Upload Windows executable
+        if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: chatipelago-${{ matrix.platform }}-x64-executable
-          path: dist/chatipelago-${{ matrix.platform }}-x64/chatipelago${{ matrix.extension }}
+          name: chatipelago-windows-node${{ matrix.node-version }}
+          path: chatipelago.exe
           retention-days: 30
-
-      - name: Upload archive
+      
+      - name: Upload Unix executable
+        if: runner.os != 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: chatipelago-${{ matrix.platform }}-x64-archive
-          path: dist/chatipelago-${{ matrix.platform }}-x64.*
+          name: chatipelago-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: chatipelago
           retention-days: 30
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download archive artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: chatipelago-*-archive
-          path: dist/
-          merge-multiple: true
-
-      - name: Download executable artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: chatipelago-*-executable
-          path: dist-executables/
-          merge-multiple: true
-
-      - name: List files for release
-        run: |
-          echo "Archive files:"
-          find dist -type f \( -name "*.zip" -o -name "*.tar.gz" \) || true
-          echo "Executable files:"
-          find dist-executables -type f -executable || find dist-executables -type f || true
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            dist/**/*.zip
-            dist/**/*.tar.gz
-            dist-executables/**/chatipelago*
-            dist-executables/**/chatipelago.exe
-          draft: false
-          prerelease: false
-          fail_on_unmatched_files: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

@@ -1,6 +1,6 @@
 /**
- * Utility to handle unpacking and locating config files for pkg executables
- * Works in both CommonJS (for launcher) and can be imported by ES modules
+ * Utility to handle unpacking and locating config files for nexe executables
+ * Can be imported by ES modules
  */
 
 const path = require('path');
@@ -29,18 +29,18 @@ function getConfigDir() {
 }
 
 /**
- * Check if we're running from a pkg executable
+ * Check if we're running from a nexe executable
  */
-function isPkg() {
-  return process.pkg !== undefined;
+function isNexe() {
+  return process.nexe !== undefined;
 }
 
 /**
- * Get the path to the source files (snapshot directory in pkg)
+ * Get the path to the source files (app directory in nexe)
  */
 function getSourceDir() {
-  if (isPkg()) {
-    // In pkg, __dirname points to the snapshot directory
+  if (isNexe()) {
+    // In nexe, __dirname points to the application directory
     return __dirname;
   } else {
     // In development, use the actual project root
@@ -49,7 +49,7 @@ function getSourceDir() {
 }
 
 /**
- * Unpack config files from the snapshot to the writable config directory
+ * Unpack config files from the application bundle to the writable config directory
  */
 function unpackConfig() {
   const configDir = getConfigDir();
@@ -119,7 +119,7 @@ function unpackConfig() {
  * Get the path to customConfig directory (unpacked or source)
  */
 function getCustomConfigPath() {
-  if (isPkg()) {
+  if (isNexe()) {
     const configDir = unpackConfig();
     return path.join(configDir, 'customConfig');
   } else {
@@ -132,7 +132,7 @@ module.exports = {
   getConfigDir,
   getCustomConfigPath,
   unpackConfig,
-  isPkg,
+  isNexe,
   getSourceDir
 };
 
