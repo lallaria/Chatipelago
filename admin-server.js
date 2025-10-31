@@ -247,18 +247,6 @@ app.post('/api/restart', (req, res) => {
   }
 });
 
-// Streamer.bot actions text endpoint
-app.get('/api/streamerbot/actions-text', async (req, res) => {
-  try {
-    const actionsPath = path.join(__projectRoot, 'streamer.bot', 'chatipelago_streamer_bot_actions');
-    const data = await fs.readFile(actionsPath, 'utf8');
-    res.json({ text: data });
-  } catch (error) {
-    console.error('Error reading streamer.bot actions file:', error);
-    res.status(500).json({ error: 'Failed to read streamer.bot actions' });
-  }
-});
-
 // Function to restart Chatipelago client
 function restartChatipelago() {
   console.log('Restarting Chatipelago client...');

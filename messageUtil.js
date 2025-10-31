@@ -19,7 +19,8 @@ export {
     ITEM_TRAP,
     BOUNCE,
     KILLER,
-    HINTED
+    HINTED,
+    EMOTES
 }
 
 function getRandomIndex(textList) {
@@ -71,7 +72,18 @@ let ITEM_TRAP = [];
 let BOUNCE = [];
 let KILLER = [];
 let HINTED = [];
+let EMOTES = {};
 let jsonItems;
+
+function loadJsonObject(filename) {
+    try {
+        return JSON.parse(fs.readFileSync(filename, 'utf8'));
+    } catch (e) {
+        console.error(`error loading json Object from file ${filename}`);
+        console.error(e);
+        return {};
+    }
+}
 
 function loadFiles() {
     // Use unpacked config path if running as nexe executable, otherwise use local path
@@ -88,6 +100,7 @@ function loadFiles() {
     BOUNCE = loadJson(path.join(customConfigPath, 'messages/bounce.json')); //deathlink send to everyone
     KILLER = loadJson(path.join(customConfigPath, 'messages/theKiller.json'));
     HINTED = loadJson(path.join(customConfigPath, "messages/hintedItem.json"));
+    EMOTES = loadJsonObject(path.join(customConfigPath, 'messages/etc.json'));
 }
 
 function myCallback() {

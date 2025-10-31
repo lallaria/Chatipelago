@@ -73,7 +73,7 @@ async function onItem(id, item, player, flags) {
 	        }
         }
 	    else if (flags === 1) {
-        	webhook.postInChat(`bbirbShiny ${player} found us ${item}, it's really important. bbirbShiny`, false, false);
+        	webhook.postInChat(`${messageUtil.EMOTES.Shiny} ${player} found us ${item}, it's really important. ${messageUtil.EMOTES.Shiny}`, false, false);
 	    }
 	    else if (player === "Chat") {
 	        webhook.postInChat(messageUtil.generateRandomText(messageUtil.SELF_FIND, { item: item }), false, false);
@@ -101,7 +101,7 @@ function onCountdown(value) {
     }
     if (value.match(/GO/) != null) {
         countdown = true;
-        webhook.postInChat(`LETSAGO ${value.replace("[Server]: ", "")} LETSAGO`, false, false);
+        webhook.postInChat(`${messageUtil.EMOTES.GO} ${value.replace("[Server]: ", "")} ${messageUtil.EMOTES.GO}`, false, false);
     } else if (value.match(/Starting/)) {
         console.log(value);
     } else {
@@ -115,7 +115,7 @@ function onHint(receiver, item, location, sender) {
         webhook.postInChat(messageUtil.generateRandomText(messageUtil.HINTED, data), false, false);
     } else {
         webhook.postInChat(`I looked, and ${sender} is hoarding ${item} in ${location}.`, false, false);
-        webhook.postInChat(`${location}? What the hell does that even mean? Is this even real?`, false, false);
+        webhook.postInChat(`${location}? What does that even mean? Is this even real?`, false, false);
     }
 }
 
@@ -174,7 +174,7 @@ function attemptLoot() {
 		        setTimeout(notifyCooldown, config.gameSettings.checkCooldown * 1000);
 	        } else { 
                 webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, { location: "bbirbComfy Home bbirbHug" }));
-                webhook.postInChat("Chat, we've been everywhere, found everything, and there's nothing more to loot. Great job friends, thanks for playing Chatipelago with us bbirbLove");
+                webhook.postInChat(`Chat, we've been everywhere, found everything, and there's nothing more to loot. Great job friends, thanks for playing Chatipelago with us ${messageUtil.EMOTES.Love}`);
                 console.log("No more locations, exiting");
                 setTimeout(server.sayGoodBye, 10000); 
 	        }
