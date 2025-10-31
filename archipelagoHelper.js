@@ -25,7 +25,7 @@ const client = new archipelago.Client();
 
 // shenanigans to fix Error in Archipelago.js
 import {WebSocket} from "ws";
-import { defaultConnectionOptions } from './node_modules/archipelago.js/dist/index.js';
+import { defaultConnectionOptions } from 'archipelago.js';
 
 global.WebSocket = WebSocket;
 client.options.debugLogVersions = false;

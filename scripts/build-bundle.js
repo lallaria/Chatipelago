@@ -1,10 +1,15 @@
 import { build } from 'esbuild';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { readFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = dirname(__dirname);
+
+// Read version from package.json
+const packageJson = JSON.parse(readFileSync(join(rootDir, 'package.json'), 'utf8'));
+const VERSION = packageJson.version;
 
 // Polyfill for import.meta.url that works in CommonJS bundle
 // In SEA: __filename = process.execPath, __dirname = dirname(process.execPath)
@@ -31,7 +36,8 @@ build({
   outfile: join(rootDir, 'dist', 'app-bundle.js'),
   banner: { js: polyfill },
   define: {
-    'import.meta.url': 'import_meta_url'
+    'import.meta.url': 'import_meta_url',
+    'process.env.VERSION': JSON.stringify(VERSION)
   }
 }).catch(() => process.exit(1));
 

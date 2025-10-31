@@ -23,9 +23,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const customConfigPath = getCustomConfigPath();
 
-// Read version from package.json
-const packageJson = JSON.parse(fssync.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
-const VERSION = packageJson.version;
+// Version is injected during build via esbuild define, fallback to reading from package.json in dev
+let VERSION = process.env.VERSION;
+if (!VERSION) {
+  // In development, read from package.json
+  try {
+    const packageJson = JSON.parse(fssync.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+    VERSION = packageJson.version;
+  } catch (error) {
+    VERSION = 'unknown';
+  }
+}
 
 // Load config immediately
 config.loadFiles();
