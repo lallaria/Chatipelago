@@ -39,9 +39,63 @@ jobs:
       - name: Build executable
         run: |
           echo "Building for ${{ matrix.platform }}..."
-          npx pkg chatipelago-launcher.js --targets node18-${{ matrix.platform }}-x64 --output-path dist/
+          echo "Current directory: $(pwd)"
+          echo "Checking if chatipelago-launcher.js exists:"
+          ls -la chatipelago-launcher.js || echo "chatipelago-launcher.js not found"
+          echo "Checking if config-unpacker.js exists:"
+          ls -la config-unpacker.js || echo "config-unpacker.js not found"
+          
+          # Create dist directory if it doesn't exist
+          mkdir -p dist
+          
+          # Build with error handling
+          echo "Starting pkg build..."
+          set +e  # Don't exit on error yet, we want to see the output
+          npx pkg chatipelago-launcher.js \
+            --targets node18-${{ matrix.platform }}-x64 \
+            --output-path dist/ \
+            2>&1 | tee build.log
+          BUILD_EXIT_CODE=$?
+          set -e
+          
+          echo "Build exit code: $BUILD_EXIT_CODE"
+          if [ -f build.log ]; then
+            echo "Build log contents:"
+            cat build.log
+          fi
+          
           echo "Files in dist after build:"
-          ls -la dist/ || dir dist
+          ls -la dist/ 2>/dev/null || echo "dist directory empty or not found"
+          find dist -type f 2>/dev/null || echo "No files found in dist"
+          
+          # Verify executable was created
+          EXECUTABLE_FOUND=0
+          if [ "${{ matrix.platform }}" == "win" ]; then
+            if [ -f "dist/chatipelago-launcher.exe" ]; then
+              echo "✓ Windows executable found"
+              EXECUTABLE_FOUND=1
+            else
+              echo "✗ Windows executable NOT found"
+              find dist -name "*.exe" -type f 2>/dev/null || echo "No .exe files found"
+            fi
+          else
+            if [ -f "dist/chatipelago-launcher" ]; then
+              echo "✓ Unix executable found"
+              ls -lh dist/chatipelago-launcher
+              EXECUTABLE_FOUND=1
+            else
+              echo "✗ Unix executable NOT found"
+              find dist -type f -executable 2>/dev/null || find dist -type f 2>/dev/null || echo "No files found in dist"
+            fi
+          fi
+          
+          if [ $EXECUTABLE_FOUND -eq 0 ]; then
+            echo "ERROR: Executable was not created. Build may have failed."
+            if [ $BUILD_EXIT_CODE -ne 0 ]; then
+              echo "Build command exited with code $BUILD_EXIT_CODE"
+            fi
+            exit 1
+          fi
         env:
           PKG_CACHE_PATH: ${{ runner.temp }}/pkg-cache
 
