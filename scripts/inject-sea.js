@@ -1,9 +1,7 @@
-import { copyFileSync, existsSync, unlinkSync } from 'fs';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { readdirSync } from 'fs';
-import rcedit from 'rcedit';
+import * as fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,78 +12,24 @@ const outputExe = join(rootDir, process.platform === 'win32' ? 'chatipelago.exe'
 const nodePath = process.execPath;
 const blobPath = join(rootDir, 'sea-prep.blob');
 
-if (!existsSync(blobPath)) {
+if (!fs.existsSync(blobPath)) {
   console.error(`Error: ${blobPath} not found. Run 'npm run build:sea' first.`);
   process.exit(1);
 }
 
 // Delete existing executable if it exists (may be locked if running)
-if (existsSync(outputExe)) {
+if (fs.existsSync(outputExe)) {
   try {
-    unlinkSync(outputExe);
+    fs.unlinkSync(outputExe);
   } catch (error) {
     console.error(`Error: Cannot delete ${outputExe}. Please close any running instances and try again.`);
     process.exit(1);
   }
 }
 
-// Copy Node.js executable
+// Copy Node.js executable to temp file
 console.log('Copying Node.js executable...');
-copyFileSync(nodePath, outputExe);
-
-// Remove signature (required on Windows and macOS)
-if (process.platform === 'win32') {
-  // Try to find signtool.exe
-  let signtoolPath = null;
-  try {
-    execSync('signtool /?', { stdio: 'pipe' });
-    signtoolPath = 'signtool';
-  } catch (error) {
-    // Check common Windows SDK locations
-    const kitPaths = [
-      'C:\\Program Files (x86)\\Windows Kits\\10\\bin',
-      'C:\\Program Files\\Windows Kits\\10\\bin'
-    ];
-    for (const kitPath of kitPaths) {
-      if (existsSync(kitPath)) {
-        try {
-          const versions = readdirSync(kitPath).filter(v => /^\d/.test(v)).sort().reverse();
-          for (const version of versions) {
-            const archPaths = [
-              join(kitPath, version, 'x64', 'signtool.exe'),
-              join(kitPath, version, 'x86', 'signtool.exe')
-            ];
-            for (const archPath of archPaths) {
-              if (existsSync(archPath)) {
-                signtoolPath = archPath;
-                break;
-              }
-            }
-            if (signtoolPath) break;
-          }
-          if (signtoolPath) break;
-        } catch (error) {
-          // Continue searching
-        }
-      }
-    }
-  }
-
-  if (signtoolPath) {
-    try {
-      execSync(`"${signtoolPath}" remove /s "${outputExe}"`, { stdio: 'pipe' });
-    } catch (error) {
-      // Signature removal failed, continue anyway
-    }
-  }
-  // If signtool not found, silently continue - postject may still work
-} else if (process.platform === 'darwin') {
-  try {
-    execSync(`codesign --remove-signature "${outputExe}"`, { stdio: 'pipe' });
-  } catch (error) {
-    // codesign not available, continue anyway
-  }
-}
+fs.copyFileSync(nodePath, outputExe);
 
 // Inject blob using postject
 console.log('Injecting SEA blob...');
@@ -97,41 +41,6 @@ if (process.platform === 'darwin') {
 }
 
 execSync(postjectCmd, { stdio: 'inherit', cwd: rootDir });
-
-// Set icon on Windows (optional - skip if it fails or times out)
-if (process.platform === 'win32') {
-  const iconPath = join(rootDir, 'chati.ico');
-  console.log(`[DEBUG] Looking for icon at: ${iconPath}`);
-  console.log(`[DEBUG] Root directory: ${rootDir}`);
-  console.log(`[DEBUG] Icon file exists: ${existsSync(iconPath)}`);
-  
-  if (existsSync(iconPath)) {
-    console.log('Setting executable icon...');
-    console.log(`[DEBUG] Using icon file: ${iconPath}`);
-    console.log(`[DEBUG] Target executable: ${outputExe}`);
-    try {
-      // Use Promise.race with timeout to prevent infinite hangs
-      const iconPromise = rcedit(outputExe, { icon: iconPath });
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout after 30 seconds')), 30000)
-      );
-      
-      await Promise.race([iconPromise, timeoutPromise]);
-      console.log('Icon set successfully');
-    } catch (error) {
-      // Non-fatal: continue build even if icon setting fails
-      console.warn(`Warning: Failed to set icon: ${error.message}`);
-      console.warn(`[DEBUG] Icon path attempted: ${iconPath}`);
-      console.warn(`[DEBUG] Executable path: ${outputExe}`);
-      console.warn(`[DEBUG] Error details:`, error);
-    }
-  } else {
-    console.warn(`Warning: Icon file not found - skipping icon setting`);
-    console.warn(`[DEBUG] Looked for icon at: ${iconPath}`);
-    console.warn(`[DEBUG] Root directory: ${rootDir}`);
-    console.warn(`[DEBUG] Current working directory: ${process.cwd()}`);
-  }
-}
 
 console.log(`\n✓ Single executable created: ${outputExe}`);
 

@@ -5,6 +5,7 @@
     "config.json": "customConfig/config.json",
     "messages/bounce.json": "customConfig/messages/bounce.json",
     "messages/bounced.json": "customConfig/messages/bounced.json",
+    "messages/etc.json": "customConfig/messages/etc.json",
     "messages/hintedItem.json": "customConfig/messages/hintedItem.json",
     "messages/itemFound.json": "customConfig/messages/itemFound.json",
     "messages/itemMissed.json": "customConfig/messages/itemMissed.json",

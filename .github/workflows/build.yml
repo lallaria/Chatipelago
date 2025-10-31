@@ -10,6 +10,10 @@ on:
   release:
     types: [ created ]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (format: v1.2.3)'
+        required: false
 
 jobs:
   build:
@@ -61,17 +65,17 @@ jobs:
             ls -lh chatipelago
           fi
       
-      - name: Create tar.gz archive (Windows)
+      - name: Create zip archive (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $archiveName = "chatipelago-windows-${{ steps.package_version.outputs.version }}.tar.gz"
+          $archiveName = "chatipelago-windows-${{ steps.package_version.outputs.version }}.zip"
           $filesToArchive = @('chatipelago.exe', 'README.md', 'LICENSE') | Where-Object { Test-Path $_ }
           if ($filesToArchive.Count -eq 0) {
             Write-Error "No files found to archive"
             exit 1
           }
-          tar -czf $archiveName $filesToArchive
+          Compress-Archive -Path $filesToArchive -DestinationPath $archiveName -Force
           Write-Host "Created: $archiveName ($(Get-Item $archiveName | Select-Object -ExpandProperty Length) bytes)"
       
       - name: Determine OS name and archive format
@@ -80,30 +84,18 @@ jobs:
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             OS_NAME="ubuntu"
-            ARCHIVE_EXT="zip"
+            ARCHIVE_EXT="tar.gz"
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             OS_NAME="macos"
             ARCHIVE_EXT="tar.gz"
           else
             OS_NAME="${{ matrix.os }}"
-            ARCHIVE_EXT="zip"
+            ARCHIVE_EXT="tar.gz"
           fi
           echo "OS_NAME=${OS_NAME}" >> $GITHUB_ENV
           echo "ARCHIVE_EXT=${ARCHIVE_EXT}" >> $GITHUB_ENV
       
-      - name: Create zip archive (Ubuntu)
-        if: runner.os != 'Windows' && env.ARCHIVE_EXT == 'zip'
-        shell: bash
-        run: |
-          ARCHIVE_NAME="chatipelago-${{ env.OS_NAME }}-${{ steps.package_version.outputs.version }}.zip"
-          zip -r "$ARCHIVE_NAME" chatipelago README.md LICENSE 2>/dev/null || {
-            echo "Error: Failed to create zip archive"
-            exit 1
-          }
-          echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
-          echo "Created: $ARCHIVE_NAME ($(stat -c%s "$ARCHIVE_NAME" 2>/dev/null || echo 'unknown') bytes)"
-      
-      - name: Create tar.gz archive (macOS)
+      - name: Create tar.gz archive (Unix)
         if: runner.os != 'Windows' && env.ARCHIVE_EXT == 'tar.gz'
         shell: bash
         run: |
@@ -113,14 +105,15 @@ jobs:
             exit 1
           }
           echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
-          echo "Created: $ARCHIVE_NAME ($(stat -f%z "$ARCHIVE_NAME" 2>/dev/null || stat -c%s "$ARCHIVE_NAME" 2>/dev/null || echo 'unknown') bytes)"
+          echo "Created: $ARCHIVE_NAME ($(stat -c%s "$ARCHIVE_NAME" 2>/dev/null || stat -f%z "$ARCHIVE_NAME" 2>/dev/null || echo 'unknown') bytes)"
       
-      - name: Upload tar.gz archive (Windows)
+      
+      - name: Upload zip archive (Windows)
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: chatipelago-windows-${{ steps.package_version.outputs.version }}
-          path: chatipelago-windows-${{ steps.package_version.outputs.version }}.tar.gz
+          path: chatipelago-windows-${{ steps.package_version.outputs.version }}.zip
           retention-days: 30
       
       - name: Upload archive (Unix)
@@ -134,7 +127,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))
+    if: github.event_name == 'release' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -146,7 +139,11 @@ jobs:
         id: tag_version
         shell: bash
         run: |
-          TAG=${GITHUB_REF#refs/tags/}
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG=${GITHUB_REF#refs/tags/}
+          fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Release tag: $TAG"
       
