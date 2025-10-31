@@ -99,27 +99,28 @@ if (process.platform === 'darwin') {
 execSync(postjectCmd, { stdio: 'inherit', cwd: rootDir });
 
 // Set icon on Windows
-if (process.platform === 'win32') {
-  const iconPath = join(rootDir, 'chati.ico');
-  if (existsSync(iconPath)) {
-    console.log('Setting executable icon...');
-    rcedit(outputExe, {
-      icon: iconPath
-    })
-      .then(() => {
+(async () => {
+  if (process.platform === 'win32') {
+    const iconPath = join(rootDir, 'chati.ico');
+    if (existsSync(iconPath)) {
+      console.log('Setting executable icon...');
+      try {
+        // Add timeout to prevent infinite hangs (30 seconds)
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Icon setting timed out after 30 seconds')), 30000)
+        );
+        await Promise.race([
+          rcedit(outputExe, { icon: iconPath }),
+          timeoutPromise
+        ]);
         console.log('Icon set successfully');
-        console.log(`\n✓ Single executable created: ${outputExe}`);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.warn(`Warning: Failed to set icon: ${error.message}`);
-        // Continue even if icon setting fails
-        console.log(`\n✓ Single executable created: ${outputExe}`);
-      });
-  } else {
-    console.warn(`Warning: Icon file not found at ${iconPath}`);
-    console.log(`\n✓ Single executable created: ${outputExe}`);
+      }
+    } else {
+      console.warn(`Warning: Icon file not found at ${iconPath}`);
+    }
   }
-} else {
   console.log(`\n✓ Single executable created: ${outputExe}`);
-}
+})();
 
