@@ -32,6 +32,10 @@ Chatipelago is a WebSocket-based Archipelago client designed to integrate stream
 - `!hint` - Request or view hints for missing items
 - `!turnchationdaddy` - Reactivate if the countdown didn't trigger properly
 
+**Browser based Interface**
+- Located at https://chati.prismativerse.com/
+- Source code here: https://github.com/lallaria/Chatipelago-Frontend
+
 ### Admin Interface
 
 **Admin API Server** (Port 8015)
