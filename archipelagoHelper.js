@@ -43,12 +43,11 @@ function connect(message) {
     cacheLoaded = false;
     let options = defaultConnectionOptions;
     options.tags = tags
-    console.log(`Connecting to ${url} as player ${playerName} with tags ${tags}`)
+    console.info(`Connecting to ${url} as player ${playerName} with tags ${tags}`)
     client.login(url, playerName, apWorld.GAME_NAME, options)
         .then(record => {
-            //console.log(`Progressive items this seed: ${record[prog_items]}`)
             fillItemLocationMap();
-            console.log("Connected to the Archipelago Server!")})
+            console.info("Connected to the Archipelago Server!")})
         .catch(console.error);
 }
 
@@ -70,7 +69,7 @@ client.items.on("itemsReceived", (items) => {
         } else {
             notifiedItems.push(Number(i.id)) }
         messageUtil.saveItems(notifiedItems, fileName);
-        console.log(`ID ${i.id}, Name ${i.name}, Sender ${i.sender}, Flags ${i.flags}`);
+        console.debug(`ID ${i.id}, Name ${i.name}, Sender ${i.sender}, Flags ${i.flags}`);
         onItemReceived(i.id, i.name, i.sender, i.flags);
     }
 })
@@ -98,7 +97,7 @@ client.messages.on("countdown", (message) => {
     } else {
     	notifiedItems.push(696969)
         messageUtil.saveItems(notifiedItems, fileName);
-        console.log("Saving countdown status");
+        console.debug("Saving countdown status");
     }
 })
 
@@ -122,7 +121,7 @@ function signalHint(hint){
 function checkGoal(lastLocation) {
     // include lastLocation because client.locations.checked may not be updated yet
     const checked = [...client.room.checkedLocations, lastLocation];
-    console.log(checked, apWorld.GOALS);
+    console.debug(checked, apWorld.GOALS);
     return apWorld.GOALS.every((goal) => checked.includes(goal));
 }
 
@@ -142,7 +141,8 @@ function getItemNameByLocation(locationId) {
 }
 
 function getHints(message) {
-    if (message.match(/bbirbShiny/) != null) {
+    let shiny = `${messageUtil.EMOTES.Shiny}`;
+    if (message.match(shiny) != null) {
         if (!isItemObtained(apWorld.ITEMS.KEY1)) { client.messages.say(`!hint ${apWorld.ITEMS.KEY1}`) }
         if (!isItemObtained(apWorld.ITEMS.KEY2)) { client.messages.say(`!hint ${apWorld.ITEMS.KEY2}`) }
         if (!isItemObtained(apWorld.ITEMS.KEY3)) { client.messages.say(`!hint ${apWorld.ITEMS.KEY3}`) }
@@ -154,9 +154,12 @@ function getHints(message) {
 }
 
 function getCheckableLocation() {
+    console.debug("getCheckableLocation");
     const validLocations = client.room.missingLocations.filter((location) => {
+        console.debug("location", location);
         const requirements = apWorld.REQUIREMENTS[location] ?? [];
-        return requirements.every((requirement) => this.isItemObtained(requirement));
+        console.debug("requirements", requirements);
+        return requirements.every((requirement) => isItemObtained(requirement));
     });
 
     if (validLocations.length === 0) return;

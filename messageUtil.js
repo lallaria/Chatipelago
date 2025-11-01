@@ -104,7 +104,7 @@ function loadFiles() {
 }
 
 function myCallback() {
-    console.log(`Saved ${jsonItems}`);
+    console.debug(`Saved ${jsonItems}`);
 }
 
 function saveItems(collectedItems, filename) {
@@ -118,10 +118,10 @@ function loadItems(filename) {
         var json = JSON.parse(fs.readFileSync(filename, 'utf8'));
     } catch (err) {
         if (err.code === 'ENOENT') {
-            console.log("Empty")
+            console.debug("Empty")
             return itemList;
         } else {
-            console.log(err);
+            console.error(err);
             exit();
         }
     }

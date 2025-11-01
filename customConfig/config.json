@@ -7,7 +7,10 @@
 		"playerName": "Chat",
 		"tags": [ "AP", "DeathLink" ]
 	},
-	"webhookUrl": "https://mixitup.webhook/",
+	"mixitupConfig": {
+		"port": 8013,
+		"webhookUrl": "https://api.mixitupapp.com/api/webhook/"
+	},
 	"streamerbotConfig": {
 		"host": "localhost",
 		"port": 8014,

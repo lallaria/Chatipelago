@@ -10,8 +10,8 @@ import * as config from './config.js';
 
 // Default synonyms for "demise" - replaced thesaurus dependency
 const DEMISE_SYNONYMS = [
-    'demise', 'death', 'end', 'doom', 'fate', 'destiny', 'downfall',
-    'destruction', 'ruin', 'perdition', 'extinction', 'annihilation',
+    'demise', 'fiend', 'end', 'doom', 'fate', 'destiny', 'downfall',
+    'destruction', 'ruin', 'extinction', 'annihilation',
     'oblivion', 'termination', 'expiration', 'passing', 'departure'
 ];
 
@@ -103,7 +103,7 @@ function onCountdown(value) {
         countdown = true;
         webhook.postInChat(`${messageUtil.EMOTES.GO} ${value.replace("[Server]: ", "")} ${messageUtil.EMOTES.GO}`, false, false);
     } else if (value.match(/Starting/)) {
-        console.log(value);
+        console.debug(value);
     } else {
         webhook.postInChat(`${value.replace("[Server]: ", "")}`, false, false);
     }

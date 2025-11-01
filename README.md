@@ -42,7 +42,7 @@ Chatipelago is a WebSocket-based Archipelago client designed to integrate stream
 - RESTful API for configuration management
 - Configuration endpoints: `GET/PUT /api/config`
 - Message file management: `GET /api/messages`, `GET /api/messages/:filename`, `PUT /api/messages/:filename`
-- Console log streaming: `GET /api/console` (Server-Sent Events), `POST /api/console/log`
+- Console log streaming: `GET /api/console` (Server-Sent Events)
 - Status and system: `GET /api/status`, `POST /api/restart`
 - Streamer.bot integration: `POST /api/streamerbot/connect`
 - Hot restart capability for the main client
@@ -137,27 +137,28 @@ All messages support variable substitution and random selection from multiple va
 
 ```
 Chatipelago/
-├── app.js                 # Unified application (client + admin API)
-├── server.js              # Legacy server (maintained for reference)
-├── bot-get.js             # Command processing logic
-├── webhook-put.js         # Chat message posting
-├── archipelagoHelper.js   # Archipelago client wrapper
-├── messageUtil.js         # Message template system
-├── config.js              # Configuration loader
-├── config-unpacker.cjs    # Config extraction for standalone builds
-├── config-unpacker-esm.js # ESM wrapper for config unpacker
-├── apWorldSettings.js     # World configuration
+├── app.js                      # Unified application (client + admin API)
+├── admin-server.js             # Admin API server (integrated)
+├── server.js                   # Server
+├── bot-get.js                  # Command processing logic
+├── webhook-put.js              # Chat message posting
+├── archipelagoHelper.js        # Archipelago client wrapper
+├── messageUtil.js              # Message template system
+├── config.js                   # Configuration loader
+├── config-unpacker.cjs         # Config extraction for standalone builds
+├── config-unpacker-esm.js      # ESM wrapper for config unpacker
+├── config-unpacker.mjs         # ESM config unpacker
+├── apWorldSettings.js          # World configuration
 ├── scripts/
-│   ├── build-bundle.js    # esbuild bundling script
-│   ├── generate-sea-config.js # SEA configuration generator
-│   └── inject-sea.js      # SEA blob injection script
-├── sea-config.json        # Node.js SEA configuration
+│   ├── build-bundle.js         # esbuild bundling script
+│   ├── generate-sea-config.js  # SEA configuration generator
+│   └── inject-sea.js           # SEA blob injection script
+├── sea-config.json             # Node.js SEA configuration
 ├── customConfig/
-│   ├── config.json        # User configuration
-│   ├── messages/          # Message templates
-│   └── tmp/               # Temporary files
-├── streamer.bot/          # Streamer.bot actions
-└── mixitup_files/         # MixItUp commands (legacy)
+│   ├── config.json             # User configuration
+│   ├── messages/               # Message templates
+│   └── tmp/                    # Temporary files
+└── mixitup_files/              # MixItUp commands
 ```
 
 ## Getting Started

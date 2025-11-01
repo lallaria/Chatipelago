@@ -52,7 +52,10 @@ The system now uses `config.json` instead of `config.js`:
     "playerName": "Chat",
     "tags": ["AP", "DeathLink"]
   },
-  "webhookUrl": "https://mixitup.webhook/",
+  "mixitupConfig": {
+    "port": 8013,
+    "webhookUrl": "https://mixitup.webhook/"
+  },
   "streamerbotConfig": {
     "port": 8014,
     "endpoint": "/chati",

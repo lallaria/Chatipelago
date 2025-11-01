@@ -28,7 +28,7 @@ async function postInChat(message, trap, bounced) {
     console.log(`Posting "${message}" in chat`);
 
     if (config.mixitup) {
-        let response = await post(message, config.webhookUrl, trap, bounced);
+        let response = await post(message, config.mixitupConfig.webhookUrl, trap, bounced);
         return response.text;
     };
     
@@ -41,7 +41,19 @@ async function postInChat(message, trap, bounced) {
             },
             body: JSON.stringify(content)
         });
-        return await response.json();    
+        
+        // Check if response has content before parsing JSON
+        const text = await response.text();
+        if (!text || text.trim().length === 0) {
+            return { text: null };
+        }
+        
+        try {
+            return await JSON.parse(text);
+        } catch (error) {
+            // If parsing fails, return the raw text
+            return { text: text };
+        }
     };
 
     if (config.streamerbot) {

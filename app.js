@@ -4,14 +4,11 @@
  * Unified Chatipelago application
  * Combines server.js and admin-server.js into a single process
  */
-
-import { StreamerbotClient } from '@streamerbot/client';
-import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as config from './config.js';
-import * as webhook from './webhook-put.js';
-import { init as initializeBot } from './bot-get.js';
+import * as server from './server.js';
+import { streamerbotclient } from './server.js';
 import { fileURLToPath } from 'url';
 import { getCustomConfigPath } from './config-unpacker-esm.js';
 import express from 'express';
@@ -35,9 +32,6 @@ if (!VERSION) {
   }
 }
 
-// Load config immediately
-config.loadFiles();
-
 // Shared console log listeners for SSE
 const consoleListeners = new Set();
 
@@ -45,8 +39,10 @@ const consoleListeners = new Set();
 const originalConsoleLog = console.log;
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
+const originalConsoleDebug = console.debug;
+const originalConsoleInfo = console.info;
 
-function createLogInterceptor(original, level) {
+function appCreateLogInterceptor(original, level) {
   return (...args) => {
     const message = args.map(arg => 
       typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
@@ -72,21 +68,11 @@ function createLogInterceptor(original, level) {
   };
 }
 
-console.log = createLogInterceptor(originalConsoleLog, 'log');
-console.error = createLogInterceptor(originalConsoleError, 'error');
-console.warn = createLogInterceptor(originalConsoleWarn, 'warn');
-
-// Initialize Streamerbot client with global error handler
-const streamerbotConfigWithErrorHandler = {
-  ...config.streamerbotConfig,
-  onError: (err) => {
-    // Suppress full traceback, just log the error message
-    console.error('[Streamer.bot] Connection error:', err.message);
-  }
-};
-
-const streamerbotclient = new StreamerbotClient(streamerbotConfigWithErrorHandler);
-webhook.setStreamerbotClient(streamerbotclient);
+console.log = appCreateLogInterceptor(originalConsoleLog, 'log');
+console.error = appCreateLogInterceptor(originalConsoleError, 'error');
+console.warn = appCreateLogInterceptor(originalConsoleWarn, 'warn');
+console.debug = appCreateLogInterceptor(originalConsoleDebug, 'debug');
+console.info = appCreateLogInterceptor(originalConsoleInfo, 'info');
 
 // Restart signal monitoring
 const restartSignalPath = path.join(customConfigPath, 'tmp', 'restart_signal');
@@ -99,7 +85,9 @@ async function checkForRestartSignal() {
     
     if (lastRestartSignal !== signalTime) {
       lastRestartSignal = signalTime;
-      console.log('Restart signal detected, exiting for restart...');
+      console.info('Restart needed for reconfiguration, exiting for restart...');
+      // Delete the signal file before exiting to prevent restart loop
+      await fs.unlink(restartSignalPath).catch(() => {});
       process.exit(0);
     }
   } catch (error) {
@@ -109,55 +97,6 @@ async function checkForRestartSignal() {
 
 // Check for restart signals every 2 seconds
 setInterval(checkForRestartSignal, 2000);
-
-// Export functions for bot integration
-export { setOnEvent, sayGoodBye };
-
-var onEvent;
-
-function setOnEvent(fct) {
-  onEvent = fct;
-}
-
-function sayGoodBye() {
-  process.exit();
-}
-
-// Streamer.bot command handler
-if (config.streamerbot) {
-  try {
-    initializeBot();
-  } catch (e) {
-    console.error('[Bot Init] Failed to initialize:', e?.message || e);
-  }
-
-  streamerbotclient.on('Command.Triggered', (data) => {
-    const payload = data?.data || data;
-    const command = payload?.command;
-    const name = payload?.name;
-    const message = (payload?.message || '').trim();
-    const args = message.length > 0 ? message.split(/\s+/) : [];
-
-    if (name === 'ChatiChat' || name === 'ChatiMod') {
-      if (typeof onEvent === 'function') {
-        onEvent(`/${command}${args.length ? '+' + args.join('+') : ''}`);
-      } else {
-        console.log('[Streamer.bot] onEvent handler not ready');
-      }
-    }
-  });
-}
-
-// Mixitup HTTP server
-if (config.mixitup) {
-  const port = process.env.PORT || 8013;
-  http.createServer((req, res) => {
-    onEvent(req.url);
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('Hello, World\n');
-  }).listen(port);
-  console.log(`Mixitup HTTP server listening on port ${port}`);
-}
 
 // Express Admin API
 const app = express();
@@ -274,24 +213,6 @@ app.put('/api/messages/:filename', async (req, res) => {
   }
 });
 
-app.post('/api/console/log', (req, res) => {
-  const logEntry = {
-    timestamp: req.body.timestamp || new Date().toISOString(),
-    message: req.body.message || '',
-    level: req.body.level || 'log'
-  };
-  
-  consoleListeners.forEach(listener => {
-    try {
-      listener.write(`data: ${JSON.stringify(logEntry)}\n\n`);
-    } catch (error) {
-      consoleListeners.delete(listener);
-    }
-  });
-  
-  res.json({ success: true });
-});
-
 app.get('/api/console', (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -378,10 +299,23 @@ function restartChatipelago() {
 async function startServer() {
   await ensureTmpDir();
   
-  app.listen(ADMIN_PORT, () => {
+  const server = app.listen(ADMIN_PORT, () => {
     console.log(`Admin API server running on port ${ADMIN_PORT}`);
     console.log(`CORS enabled for: https://chati.prismativerse.com`);
-    console.log('Chatipelago started successfully!');
+    console.info('Chatipelago started successfully!');
+  });
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`\nPort ${ADMIN_PORT} already in use. Are you running another instance of Chatipelago?`);
+      console.error(`\nTo fix this, either:`);
+      console.error(`1. Stop the other Chatipelago instance`);
+      console.error(`2. Kill the process using: netstat -ano | findstr :${ADMIN_PORT}`);
+      process.exit(1);
+    } else {
+      console.error('\nFailed to start server:', error);
+      process.exit(1);
+    }
   });
 }
 
@@ -395,12 +329,12 @@ async function ensureTmpDir() {
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\nShutting down Chatipelago...');
+  console.info('\nShutting down Chatipelago...');
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('\nShutting down Chatipelago...');
+  console.info('\nShutting down Chatipelago...');
   process.exit(0);
 });
 

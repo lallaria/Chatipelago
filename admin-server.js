@@ -257,14 +257,14 @@ app.post('/api/restart', (req, res) => {
 
 // Function to restart Chatipelago client
 function restartChatipelago() {
-  console.log('Restarting Chatipelago client...');
+  console.info('Restarting Chatipelago client...');
   
   // Write a restart signal file that the main process can monitor
   // Use unpacked config path (already set as __dirname)
   const restartSignalPath = path.join(__dirname, 'tmp', 'restart_signal');
   fs.writeFile(restartSignalPath, Date.now().toString(), 'utf8')
     .then(() => {
-      console.log('Restart signal written, main process should restart shortly...');
+      console.info('Restart signal written, main process should restart shortly...');
     })
     .catch((error) => {
       console.error('Failed to write restart signal:', error);
@@ -293,12 +293,12 @@ async function startServer() {
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
-  console.log('Shutting down admin server...');
+  console.info('Shutting down admin server...');
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('Shutting down admin server...');
+  console.info('Shutting down admin server...');
   process.exit(0);
 });
 

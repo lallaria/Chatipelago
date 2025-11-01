@@ -72,8 +72,8 @@ export function getSourceDir() {
     // In nexe, __dirname points to the application directory
     return __dirname;
   } else {
-    // In development, use the actual project root (parent of this file's dir)
-    return path.dirname(__dirname);
+    // In development, use the actual project root (this file's dir)
+    return __dirname;
   }
 }
 
