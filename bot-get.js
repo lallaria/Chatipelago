@@ -176,7 +176,7 @@ function attemptLoot() {
             if (archipelagoHelper.anyLocationsLeft){
 		        setTimeout(notifyCooldown, config.gameSettings.checkCooldown * 1000);
 	        } else { 
-                webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, { location: "bbirbComfy Home bbirbHug" }));
+                webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, { location: `${messageUtil.EMOTES.EmptyLocation}` }));
                 webhook.postInChat(`Chat, we've been everywhere, found everything, and there's nothing more to loot. Great job friends, thanks for playing Chatipelago with us ${messageUtil.EMOTES.Love}`);
                 console.log("No more locations, exiting");
                 setTimeout(server.sayGoodBye, 10000); 
