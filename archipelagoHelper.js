@@ -124,11 +124,6 @@ client.items.on("hintReceived", (hint) => {
     signalHint(hint);
 })
 
-client.status.on("statusChanged", (status) => {
-    console.log(status);
-    status = status;
-});
-
 function signalHint(hint){
     if (!hint.found) {
         let receiver = hint.item.receiver.name;
