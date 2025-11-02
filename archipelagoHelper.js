@@ -21,7 +21,8 @@ export {
     getLocationName,
     giveDeathLink,
     goal,
-    getHints
+    getHints,
+    getAPStatus
 }
 
 const client = new archipelago.Client();
@@ -36,6 +37,10 @@ client.options.debugLogVersions = false;
 let cacheLoaded;
 
 function connect(message) {
+    if (client.socket.connected) {
+        console.info('Disconnecting from Archipelago server to reload connection info...');
+        client.socket.disconnect();
+    }
     let text = message + ""
     let conStrs = text.split(" ");
     let hostname = conStrs[1] || config.connectionInfo.hostname;
@@ -91,6 +96,10 @@ function loadCache() {
     }
 }
 
+function getAPStatus() {
+    return client.socket.url;
+}
+
 client.deathLink.on("deathReceived", (source, time, cause) => {
     console.log("DeathLink:", cause, source);
     return onDeathLink(source, cause);
@@ -114,6 +123,11 @@ client.items.on("hintReceived", (hint) => {
     console.log(hint);
     signalHint(hint);
 })
+
+client.status.on("statusChanged", (status) => {
+    console.log(status);
+    status = status;
+});
 
 function signalHint(hint){
     if (!hint.found) {

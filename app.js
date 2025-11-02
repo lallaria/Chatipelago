@@ -8,7 +8,8 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as config from './config.js';
 import * as server from './server.js';
-import { streamerbotclient } from './server.js';
+import { streamerbotclient, reloadChatBotConfig } from './server.js';
+import { connect as reconnectAP, getAPStatus } from './archipelagoHelper.js';
 import { fileURLToPath } from 'url';
 import { getCustomConfigPath } from './config-unpacker-esm.js';
 import express from 'express';
@@ -148,10 +149,33 @@ app.get('/api/config', async (req, res) => {
 app.put('/api/config', async (req, res) => {
   try {
     const configPath = path.join(customConfigPath, 'config.json');
+    
+    // Store old config values to detect changes
+    const oldAPConfig = JSON.stringify(config.connectionInfo);
+    const oldStreamerbot = config.streamerbot;
+    const oldMixitup = config.mixitup;
+    
+    // Write new config
     const configData = JSON.stringify(req.body, null, 2);
     await fs.writeFile(configPath, configData, 'utf8');
-    restartChatipelago();
-    res.json({ success: true, message: 'Configuration updated and client restarted' });
+    
+    // Reload config module
+    config.loadFiles();
+    
+    // Check what changed and reload appropriate components
+    const newAPConfig = JSON.stringify(config.connectionInfo);
+    if (oldAPConfig !== newAPConfig) {
+      console.info('Archipelago connection info changed, reconnecting...');
+      reconnectAP();
+    }
+    
+    // Reload server components (Streamer.bot, MixItUp)
+    if (oldStreamerbot !== config.streamerbot || oldMixitup !== config.mixitup) {
+      console.info('Chatbot components changed, reloading...');
+      reloadChatBotConfig();
+    }
+    
+    res.json({ success: true, message: 'Configuration updated and reloaded' });
   } catch (error) {
     console.error('Error writing config:', error);
     res.status(500).json({ error: 'Failed to update configuration' });
@@ -240,7 +264,10 @@ app.get('/api/status', (req, res) => {
     status: 'connected',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    version: VERSION
+    version: VERSION,
+    archipelago: {
+      connected: getAPStatus()
+    }
   });
 });
 
@@ -279,6 +306,16 @@ app.post('/api/streamerbot/connect', async (req, res) => {
     res.json({ success: true, message: 'Streamer.bot connection initiated' });
   } catch (error) {
     console.error('Error connecting to Streamer.bot:', error);
+    res.status(500).json({ error: `Failed to connect: ${error.message}` });
+  }
+});
+
+app.post('/api/archipelago/connect', async (req, res) => {
+  try {
+    reconnectAP();
+    res.json({ success: true, message: 'Archipelago connection initiated' });
+  } catch (error) {
+    console.error('Error connecting to Archipelago:', error);
     res.status(500).json({ error: `Failed to connect: ${error.message}` });
   }
 });
