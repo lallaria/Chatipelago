@@ -11,17 +11,19 @@ import { getCustomConfigPath } from './config-unpacker-esm.js';
 // Load config immediately so we can check it
 config.loadFiles();
 
-// Initialize Streamerbot client with global error handler
-const streamerbotConfigWithErrorHandler = {
-  ...config.streamerbotConfig,
-  onError: (err) => {
-    // Suppress full traceback, just log the error message
-    console.error('[Streamer.bot] Connection error:', err.message);
-  }
-};
-
-const streamerbotclient = new StreamerbotClient(streamerbotConfigWithErrorHandler);
-webhook.setStreamerbotClient(streamerbotclient);
+// Initialize Streamerbot client only if enabled
+let streamerbotclient = null;
+if (config.streamerbot) {
+  const streamerbotConfigWithErrorHandler = {
+    ...config.streamerbotConfig,
+    onError: (err) => {
+      // Suppress full traceback, just log the error message
+      console.error('[Streamer.bot] Connection error:', err.message);
+    }
+  };
+  streamerbotclient = new StreamerbotClient(streamerbotConfigWithErrorHandler);
+  webhook.setStreamerbotClient(streamerbotclient);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

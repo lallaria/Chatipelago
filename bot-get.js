@@ -144,6 +144,9 @@ let lostIt = false;
 function attemptLoot() {
     if (isInCooldown()) return;
     if (!currentLocation) {
+        if (checkForEnd()) {
+            return;
+        }
         if (Math.random() < 0.2 && Math.random() < 0.2) {
             webhook.postInChat("Oooooh look! It's @LMarioza, @Dranzior, and @DelilahIsDidi! You can't loot them though, so you should \'!search\' first.");
         } else {
@@ -187,17 +190,33 @@ function attemptLoot() {
     }
 }
 
+function checkForEnd() {
+    if (!archipelagoHelper.anyLocationsLeft()) {
+        if (archipelagoHelper.checkGoal()) {
+            archipelagoHelper.goal();
+            goal = true;
+            webhook.postInChat(`Chat, we've been everywhere, found everything, and there's nothing more to loot. Great job friends, thanks for playing Chatipelago with us ${messageUtil.EMOTES.Love}`);
+            console.log("No more locations, exiting");
+            setTimeout(server.sayGoodBye, 10000); 
+            return true;
+        }
+    }
+    return false;
+}
+
 function attemptSearch(message) {
     if (isInCooldown()) return;
     searchAttempts++
     if (searchAttempts >= config.gameSettings.searchAttemptsRequired && Math.random() < config.gameSettings.lootChance) {
         currentLocation = archipelagoHelper.getCheckableLocation();
         if (!currentLocation) {
-	        webhook.postInChat("Whooooa Chat, you've cleared out all of your available checks! I know BK is the favorite around here, but how about a $6 sub to pass the time?");
-	} else {
-        lootAttempts = 0;
-        searchAttempts = 0;
-        webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, { location: archipelagoHelper.getLocationName(currentLocation) }));
+            if (!checkForEnd()) {
+                webhook.postInChat("Whooooa Chat, you've cleared out all of your available checks! I know BK is the favorite around here, but how about a $6 sub to pass the time?");
+            }
+        } else {
+            lootAttempts = 0;
+            searchAttempts = 0;
+            webhook.postInChat(messageUtil.generateRandomText(messageUtil.LOCATION_FOUND, { location: archipelagoHelper.getLocationName(currentLocation) }));
         }
     }
 }

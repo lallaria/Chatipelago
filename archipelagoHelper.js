@@ -2,6 +2,9 @@ import * as archipelago from 'archipelago.js'
 import * as config from './config.js';
 import * as apWorld from './apWorldSettings.js'
 import * as messageUtil from './messageUtil.js'
+import { getConfigDir } from './config-unpacker-esm.js';
+import path from 'path';
+import * as fs from 'fs';
 
 export {
     connect,
@@ -78,7 +81,12 @@ function loadCache() {
     if (!cacheLoaded)
     {
         cacheLoaded = true;
-        fileName = './saved/' + client.room.seedName + client.name + 'savedItems.json';
+        const configDir = getConfigDir();
+        const savedDir = path.join(configDir, 'saved');
+        if (!fs.existsSync(savedDir)) {
+            fs.mkdirSync(savedDir, { recursive: true });
+        }
+        fileName = path.join(savedDir, client.room.seedName + 'savedItems.json');
         notifiedItems = messageUtil.loadItems(fileName);
     }
 }
@@ -118,7 +126,7 @@ function signalHint(hint){
     }
 }
 
-function checkGoal(lastLocation) {
+function checkGoal(lastLocation = "") {
     // include lastLocation because client.locations.checked may not be updated yet
     const checked = [...client.room.checkedLocations, lastLocation];
     console.debug(checked, apWorld.GOALS);
@@ -154,7 +162,6 @@ function getHints(message) {
 }
 
 function getCheckableLocation() {
-    console.debug("getCheckableLocation");
     const validLocations = client.room.missingLocations.filter((location) => {
         console.debug("location", location);
         const requirements = apWorld.REQUIREMENTS[location] ?? [];
