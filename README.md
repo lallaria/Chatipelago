@@ -180,9 +180,7 @@ For detailed setup instructions, see ADMIN-API.md.
 
 ## Known Limitations
 
-- MixItUp mode supported but not actively developed
 - Admin API requires additional frontend for full functionality
-- Item cache persistence: stored in `./saved/` directory as `{seedName}{playerName}savedItems.json`
 - Goal completion triggers game end after 10-second delay
 - Standalone executables require Node.js during build process
 - SEA builds are platform-specific (Windows, Linux, macOS builds are separate)

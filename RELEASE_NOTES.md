@@ -115,7 +115,6 @@
 
 ## Known Limitations
 - MixItUp mode supported but complicated to set up.
-- Item cache persistence: stored in `./saved/` directory as `{seedName}{playerName}savedItems.json`
 - Goal completion triggers client exit after 10-second delay
 - Standalone executables require Node.js during build process
 - SEA builds are platform-specific (Windows, Linux, macOS builds are separate)

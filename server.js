@@ -106,7 +106,7 @@ function initializeStreamerbot() {
 function initializeMixitup() {
   'use strict';
   var port = process.env.PORT || config.mixitupConfig?.port || 8013;
-  mixitupServer = http.createServer(function (req, res) {
+  mixitupserver = http.createServer(function (req, res) {
     if (typeof onEvent === 'function') {
         onEvent(req.url);
     }
@@ -131,11 +131,11 @@ function reloadChatBotConfig() {
     streamerbotclient = null;
     webhook.setStreamerbotClient(null);
   }
-  if (mixitupServer) {
-    mixitupServer.close(() => {
+  if (mixitupserver) {
+    mixitupserver.close(() => {
       console.info('MixItUp HTTP server stopped');
     });
-    mixitupServer = null;
+    mixitupserver = null;
   }
   
   config.loadFiles();
