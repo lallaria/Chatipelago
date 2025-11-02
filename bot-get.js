@@ -221,7 +221,9 @@ function attemptSearch(message) {
     }
 }
 
-function onChatiConnect(message) {
+async function onChatiConnect(message) {
     let text = message + ""
-    archipelagoHelper.connect(text);
+    await archipelagoHelper.connect(text).catch(err => {
+        console.error('Failed to connect to Archipelago:', err);
+    });
 }

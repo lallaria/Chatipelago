@@ -8,8 +8,8 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as config from './config.js';
 import * as server from './server.js';
-import { streamerbotclient, reloadChatBotConfig } from './server.js';
-import { connect as reconnectAP, getAPStatus } from './archipelagoHelper.js';
+import { streamerbotclient, reloadChatBotConfig, getStreamerbotStatus, getMixitupStatus } from './server.js';
+import { connect as reconnectAP, getAPStatus, getAPUptime } from './archipelagoHelper.js';
 import { fileURLToPath } from 'url';
 import { getCustomConfigPath } from './config-unpacker-esm.js';
 import express from 'express';
@@ -166,7 +166,9 @@ app.put('/api/config', async (req, res) => {
     const newAPConfig = JSON.stringify(config.connectionInfo);
     if (oldAPConfig !== newAPConfig) {
       console.info('Archipelago connection info changed, reconnecting...');
-      reconnectAP();
+      reconnectAP().catch(err => {
+        console.error('Failed to reconnect to Archipelago:', err);
+      });
     }
     
     // Reload server components (Streamer.bot, MixItUp)
@@ -260,14 +262,39 @@ app.get('/api/console', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
+  const archipelagoUrl = getAPStatus();
+  const streamerbotStatus = getStreamerbotStatus();
+  const mixitupStatus = getMixitupStatus();
+  
+  // Determine which chatbot is active
+  let chatbot = null;
+  if (config.streamerbot && streamerbotStatus) {
+    chatbot = {
+      type: 'streamerbot',
+      ...streamerbotStatus
+    };
+  } else if (config.mixitup && mixitupStatus) {
+    chatbot = {
+      type: 'mixitup',
+      ...mixitupStatus
+    };
+  }
+  
   res.json({
     status: 'connected',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     version: VERSION,
+    api: {
+      connected: true,
+      uptime: process.uptime()
+    },
     archipelago: {
-      connected: getAPStatus()
-    }
+      connected: !!archipelagoUrl,
+      url: archipelagoUrl || null,
+      uptime: getAPUptime()
+    },
+    chatbot: chatbot
   });
 });
 
@@ -312,7 +339,7 @@ app.post('/api/streamerbot/connect', async (req, res) => {
 
 app.post('/api/archipelago/connect', async (req, res) => {
   try {
-    reconnectAP();
+    await reconnectAP('');
     res.json({ success: true, message: 'Archipelago connection initiated' });
   } catch (error) {
     console.error('Error connecting to Archipelago:', error);
@@ -344,13 +371,11 @@ async function startServer() {
 
   server.on('error', (error) => {
     if (error.code === 'EADDRINUSE') {
-      console.error(`\nPort ${ADMIN_PORT} already in use. Are you running another instance of Chatipelago?`);
-      console.error(`\nTo fix this, either:`);
-      console.error(`1. Stop the other Chatipelago instance`);
-      console.error(`2. Kill the process using: netstat -ano | findstr :${ADMIN_PORT}`);
+      console.error(`\nError: Admin server can't start - do you have another Chatipelago process running?`);
+      console.error(`Port ${ADMIN_PORT} is already in use.\n`);
       process.exit(1);
     } else {
-      console.error('\nFailed to start server:', error);
+      console.error('[Admin API] Server error:', error.message);
       process.exit(1);
     }
   });

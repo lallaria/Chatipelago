@@ -285,9 +285,20 @@ async function ensureTmpDir() {
 async function startServer() {
   await ensureTmpDir();
   
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Admin API server running on port ${PORT}`);
     console.log(`CORS enabled for: https://chati.prismativerse.com`);
+  });
+  
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\nError: Admin server can't start - do you have another Chatipelago process running?`);
+      console.error(`Port ${PORT} is already in use.\n`);
+      process.exit(1);
+    } else {
+      console.error('[Admin API] Server error:', err.message);
+      process.exit(1);
+    }
   });
 }
 

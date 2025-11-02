@@ -14,6 +14,10 @@ config.loadFiles();
 let streamerbotclient = null;
 let mixitupserver = null;
 
+// Track connection start times for uptime calculation
+let streamerbotConnectionStart = null;
+let mixitupConnectionStart = null;
+
 // Monitor for restart signals - use unpacked config path
 const customConfigPath = getCustomConfigPath();
 const restartSignalPath = path.join(customConfigPath, 'tmp', 'restart_signal');
@@ -39,7 +43,39 @@ async function checkForRestartSignal() {
 // Check for restart signals every 2 seconds
 setInterval(checkForRestartSignal, 2000);
 
-export { setOnEvent, sayGoodBye, streamerbotclient, reloadChatBotConfig }
+// Status check functions
+function getStreamerbotStatus() {
+  if (!streamerbotclient) return null;
+  const connected = streamerbotclient.connected || streamerbotclient.isConnected?.();
+  return {
+    connected: !!connected,
+    uptime: connected && streamerbotConnectionStart 
+      ? Math.floor((Date.now() - streamerbotConnectionStart) / 1000)
+      : null
+  };
+}
+
+function getMixitupStatus() {
+  if (!mixitupserver) return null;
+  const listening = mixitupserver.listening;
+  return {
+    connected: listening,
+    uptime: listening && mixitupConnectionStart
+      ? Math.floor((Date.now() - mixitupConnectionStart) / 1000)
+      : null,
+    port: mixitupserver.address()?.port || null
+  };
+}
+
+export { 
+  setOnEvent, 
+  sayGoodBye, 
+  streamerbotclient, 
+  mixitupserver,
+  reloadChatBotConfig,
+  getStreamerbotStatus,
+  getMixitupStatus
+}
 
 var onEvent;
 
@@ -77,6 +113,15 @@ function initializeStreamerbot() {
   streamerbotclient = new StreamerbotClient(streamerbotConfigWithErrorHandler);
   webhook.setStreamerbotClient(streamerbotclient);
 
+  // Track connection events for uptime
+  streamerbotclient.on('connected', () => {
+    streamerbotConnectionStart = Date.now();
+  });
+  
+  streamerbotclient.on('disconnected', () => {
+    streamerbotConnectionStart = null;
+  });
+
   // Set up event listeners
   streamerbotclient.on('Command.Triggered', (data) => {
     const payload = data?.data || data;
@@ -97,9 +142,13 @@ function initializeStreamerbot() {
   // If immediate connect is enabled, trigger connection
   if (config.streamerbotConfig?.immediate) {
     console.info('Streamer.bot immediate connect enabled, initiating connection...');
-    streamerbotclient.connect?.().catch(err => {
-      console.error('[Streamer.bot] Immediate connect failed:', err.message);
-    });
+    streamerbotclient.connect?.()
+      .then(() => {
+        streamerbotConnectionStart = Date.now();
+      })
+      .catch(err => {
+        console.error('[Streamer.bot] Immediate connect failed:', err.message);
+      });
   }
 }
 
@@ -112,8 +161,23 @@ function initializeMixitup() {
     }
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end('Hello, World\n');
-  }).listen(port);
-  console.info(`MixItUp HTTP server listening on port ${port}`);
+  });
+  
+  mixitupserver.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\nError: Admin server can't start - do you have another Chatipelago process running?`);
+      console.error(`Port ${port} is already in use.\n`);
+      process.exit(1);
+    } else {
+      console.error('[MixItUp] Server error:', err.message);
+      process.exit(1);
+    }
+  });
+  
+  mixitupserver.listen(port, () => {
+    mixitupConnectionStart = Date.now();
+    console.info(`MixItUp HTTP server listening on port ${port}`);
+  });
 }
 
 // Export reload function

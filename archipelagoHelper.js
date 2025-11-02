@@ -22,7 +22,8 @@ export {
     giveDeathLink,
     goal,
     getHints,
-    getAPStatus
+    getAPStatus,
+    getAPUptime
 }
 
 const client = new archipelago.Client();
@@ -35,11 +36,16 @@ global.WebSocket = WebSocket;
 client.options.debugLogVersions = false;
 
 let cacheLoaded;
+let archipelagoConnectionStart = null;
 
-function connect(message) {
+async function connect(message) {
+    // Wait for disconnect to complete if currently connected
     if (client.socket.connected) {
         console.info('Disconnecting from Archipelago server to reload connection info...');
+        archipelagoConnectionStart = null;
         client.socket.disconnect();
+        // Wait a moment for disconnect to complete
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
     let text = message + ""
     let conStrs = text.split(" ");
@@ -54,6 +60,7 @@ function connect(message) {
     console.info(`Connecting to ${url} as player ${playerName} with tags ${tags}`)
     client.login(url, playerName, apWorld.GAME_NAME, options)
         .then(record => {
+            archipelagoConnectionStart = Date.now();
             fillItemLocationMap();
             console.info("Connected to the Archipelago Server!")})
         .catch(console.error);
@@ -98,6 +105,13 @@ function loadCache() {
 
 function getAPStatus() {
     return client.socket.url;
+}
+
+function getAPUptime() {
+    if (!archipelagoConnectionStart || !client.socket.connected) {
+        return null;
+    }
+    return Math.floor((Date.now() - archipelagoConnectionStart) / 1000);
 }
 
 client.deathLink.on("deathReceived", (source, time, cause) => {
