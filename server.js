@@ -46,12 +46,13 @@ setInterval(checkForRestartSignal, 2000);
 // Status check functions
 function getStreamerbotStatus() {
   if (!streamerbotclient) return null;
-  const connected = streamerbotclient.connected || streamerbotclient.isConnected?.();
+  const connected = streamerbotConnectionStart !== null;
   return {
-    connected: !!connected,
+    connected: connected,
     uptime: connected && streamerbotConnectionStart 
-      ? Math.floor((Date.now() - streamerbotConnectionStart) / 1000)
-      : null
+      ? Math.floor((Date.now() - streamerbotConnectionStart.timestamp) / 1000)
+      : null,
+    version: streamerbotConnectionStart?.version || null
   };
 }
 
@@ -94,10 +95,10 @@ try {
     console.error('[ChatBot Init] Failed to initialize:', e?.message || e);
 }
 
-if (config.streamerbot) {
+if (config.streamerbot && streamerbotclient === null) {
   initializeStreamerbot();
 }
-if (config.mixitup) {
+if (config.mixitup && mixitupserver === null) {
   initializeMixitup();
 }
 
@@ -107,20 +108,19 @@ function initializeStreamerbot() {
     onError: (err) => {
       // Suppress full traceback, just log the error message
       console.error('[Streamer.bot] Connection error:', err.message);
+    },
+    onConnect: (data) => {
+      streamerbotConnectionStart = {timestamp: Date.now(), version: data.version};
+      console.info('[Streamer.bot] Successfully connected');
+    },
+    onDisconnect: () => {
+      streamerbotConnectionStart = null;
+      console.info('[Streamer.bot] Disconnected');
     }
   };
 
   streamerbotclient = new StreamerbotClient(streamerbotConfigWithErrorHandler);
   webhook.setStreamerbotClient(streamerbotclient);
-
-  // Track connection events for uptime
-  streamerbotclient.on('connected', () => {
-    streamerbotConnectionStart = Date.now();
-  });
-  
-  streamerbotclient.on('disconnected', () => {
-    streamerbotConnectionStart = null;
-  });
 
   // Set up event listeners
   streamerbotclient.on('Command.Triggered', (data) => {
@@ -139,17 +139,6 @@ function initializeStreamerbot() {
   });
   console.info(`Streamer.bot websocket client initialized`);
   
-  // If immediate connect is enabled, trigger connection
-  if (config.streamerbotConfig?.immediate) {
-    console.info('Streamer.bot immediate connect enabled, initiating connection...');
-    streamerbotclient.connect?.()
-      .then(() => {
-        streamerbotConnectionStart = Date.now();
-      })
-      .catch(err => {
-        console.error('[Streamer.bot] Immediate connect failed:', err.message);
-      });
-  }
 }
 
 function initializeMixitup() {
