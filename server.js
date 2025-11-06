@@ -103,6 +103,27 @@ if (config.mixitup && mixitupserver === null) {
 }
 
 function initializeStreamerbot() {
+  // Safety check: if client already exists, clean it up first
+  if (streamerbotclient) {
+    try {
+      streamerbotclient.removeAllListeners?.('Command.Triggered');
+      streamerbotclient.removeAllListeners?.();
+      // Clean up underlying WebSocket if accessible
+      try {
+        const ws = streamerbotclient.socket;
+        if (ws && typeof ws.removeAllListeners === 'function') {
+          ws.removeAllListeners('message');
+          ws.removeAllListeners();
+        }
+      } catch (e) {
+        // Ignore WebSocket cleanup errors
+      }
+      streamerbotclient.disconnect?.();
+    } catch (e) {
+      // Ignore cleanup errors
+    }
+  }
+
   const streamerbotConfigWithErrorHandler = {
     ...config.streamerbotConfig,
     onError: (err) => {
@@ -172,9 +193,23 @@ function initializeMixitup() {
 // Export reload function
 function reloadChatBotConfig() {
   if (streamerbotclient) {
-    // Disconnect existing client if connected
+    // Remove all event listeners before disconnecting
     try {
       if (streamerbotclient.connected || streamerbotclient.isConnected?.()) {
+        // Remove the Command.Triggered listener
+        streamerbotclient.removeAllListeners?.('Command.Triggered');
+        // Also clear all listeners as a safety measure
+        streamerbotclient.removeAllListeners?.();
+        // Clean up underlying WebSocket if accessible
+        try {
+          const ws = streamerbotclient.socket;
+          if (ws && typeof ws.removeAllListeners === 'function') {
+            ws.removeAllListeners('message');
+            ws.removeAllListeners();
+          }
+        } catch (e) {
+          // Ignore WebSocket cleanup errors
+        }
         streamerbotclient.disconnect?.();
         console.info('Disconnected existing Streamer.bot client');
       }

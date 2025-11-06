@@ -33,6 +33,9 @@ import {WebSocket} from "ws";
 import { defaultConnectionOptions } from 'archipelago.js';
 
 global.WebSocket = WebSocket;
+// Increase max listeners for WebSocket to prevent memory leak warnings
+// Libraries (archipelago.js, StreamerbotClient) may add multiple message listeners
+WebSocket.setMaxListeners(20);
 client.options.debugLogVersions = false;
 
 let cacheLoaded;
@@ -43,9 +46,22 @@ async function connect(message) {
     if (client.socket.connected) {
         console.info('Disconnecting from Archipelago server to reload connection info...');
         archipelagoConnectionStart = null;
+        // Clean up any listeners on the socket before disconnecting
+        try {
+            if (client.socket.socket) {
+                // Access the underlying WebSocket if available
+                const ws = client.socket.socket;
+                if (ws && typeof ws.removeAllListeners === 'function') {
+                    ws.removeAllListeners('message');
+                    ws.removeAllListeners();
+                }
+            }
+        } catch (e) {
+            // Ignore cleanup errors
+        }
         client.socket.disconnect();
-        // Wait a moment for disconnect to complete
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Wait longer for disconnect to complete and cleanup
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
     let text = message + ""
     let conStrs = text.split(" ");
