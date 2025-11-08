@@ -68,11 +68,13 @@ async function connect(message) {
     let hostname = conStrs[1] || config.connectionInfo.hostname;
     let port = Number(conStrs[2]) || config.connectionInfo.port;
     let playerName = conStrs[3] || config.connectionInfo.playerName;
+    let password = config.connectionInfo.password;
     let tags = config.connectionInfo.tags;
     let url = hostname + ':' + port;
     cacheLoaded = false;
     let options = defaultConnectionOptions;
     options.tags = tags
+    options.password = password;
     console.info(`Connecting to ${url} as player ${playerName} with tags ${tags}`)
     client.login(url, playerName, apWorld.GAME_NAME, options)
         .then(record => {

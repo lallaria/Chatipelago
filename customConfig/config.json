@@ -5,6 +5,7 @@
 		"hostname": "archipelago.gg",
 		"port": 38281,
 		"playerName": "Chat",
+		"password": "",
 		"tags": [ "AP", "DeathLink" ]
 	},
 	"mixitupConfig": {
@@ -13,9 +14,9 @@
 	},
 	"streamerbotConfig": {
 		"host": "localhost",
-		"port": 8014,
-		"endpoint": "/chati",
-		"password": "delilahsbasement",
+		"port": 8080,
+		"endpoint": "",
+		"password": "",
 		"immediate": true,
 		"retries": 5
 	},

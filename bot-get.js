@@ -53,7 +53,7 @@ function onEvent(message) {
             case '!hint':
                 archipelagoHelper.getHints(strMessage);
                 break;
-            case '!turnchationdaddy':
+            case '!turnchation':
                 countdown = true;
                 break;
             default:
