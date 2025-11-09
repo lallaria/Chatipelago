@@ -6,7 +6,8 @@
 		"port": 38281,
 		"playerName": "Chat",
 		"password": "",
-		"tags": [ "AP", "DeathLink" ]
+		"tags": [ "AP", "DeathLink" ],
+		"timeoutMs": 30000
 	},
 	"mixitupConfig": {
 		"port": 8013,

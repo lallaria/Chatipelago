@@ -30,7 +30,7 @@ const client = new archipelago.Client();
 
 // shenanigans to fix Error in Archipelago.js
 import {WebSocket} from "ws";
-import { defaultConnectionOptions } from 'archipelago.js';
+import { defaultConnectionOptions, defaultClientOptions } from 'archipelago.js';
 
 global.WebSocket = WebSocket;
 // Increase max listeners for WebSocket to prevent memory leak warnings
@@ -69,12 +69,16 @@ async function connect(message) {
     let port = Number(conStrs[2]) || config.connectionInfo.port;
     let playerName = conStrs[3] || config.connectionInfo.playerName;
     let password = config.connectionInfo.password;
-    let tags = config.connectionInfo.tags;
+    let tags = config.connectionInfo.tags ?? [];
     let url = hostname + ':' + port;
     cacheLoaded = false;
-    let options = defaultConnectionOptions;
-    options.tags = tags
-    options.password = password;
+    const timeoutMs = config.connectionInfo.timeoutMs ?? defaultClientOptions.timeout;
+    client.options.timeout = timeoutMs;
+    let options = {
+        ...defaultConnectionOptions,
+        tags,
+        password: password ?? defaultConnectionOptions.password
+    };
     console.info(`Connecting to ${url} as player ${playerName} with tags ${tags}`)
     client.login(url, playerName, apWorld.GAME_NAME, options)
         .then(record => {
