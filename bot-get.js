@@ -133,6 +133,7 @@ function notifyCooldown() {
 }
 
 function deathLink(player) {
+    if (player === undefined) { player = "Chat"; };
     let reason = `${player} met their ${messageUtil.getRandomIndex(DEMISE_SYNONYMS)} by ${messageUtil.generateRandomText(messageUtil.KILLER)}!`
     webhook.postInChat(`Good luck everyone, @${reason}`, false, false);
     // currently_dead = true; // for testing
