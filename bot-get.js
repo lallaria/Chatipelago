@@ -68,7 +68,7 @@ async function onItem(id, item, player, flags) {
 	        if (Math.random() < 0.6) { currently_dead = true; }
 	        const timedOutUser = await webhook.postInChat(messageUtil.generateRandomText(messageUtil.ITEM_TRAP, { item: item, player: player }), currently_dead, false);
 	        if (timedOutUser) {
-	            console.log(`${timedOutUser} user died`);
+                console.log(`${timedOutUser} user died`);
 	            deathLink(timedOutUser);
 	        }
         }

@@ -100,15 +100,11 @@ client.items.on("itemsReceived", (items) => {
     loadCache();    //make sure the cache is loaded before sending any item to chat
     if (notifiedItems.includes(696969)){ onCountdown("TRUE"); }
     for (let i of items) {
-        // I'm sure that there was a reason to add 100000 to the id, but uh, clearly past delilah did not do me any favors
-        if (notifiedItems.includes(Number(i.id))) { continue; }
-        if (notifiedItems.includes(Number(i.id) + 100000)) { continue; }
-        if (Number(i.id) > 12400) {
-            notifiedItems.push(Number(i.id) + 100000);
-        } else {
-            notifiedItems.push(Number(i.id)) }
+        const itemKey = { id: Number(i.id), locationId: Number(i.locationId) };
+        if (notifiedItems.some(notifiedItem => notifiedItem.id === itemKey.id && notifiedItem.locationId === itemKey.locationId)) { continue; }
+        notifiedItems.push(itemKey);
         messageUtil.saveItems(notifiedItems, fileName);
-        console.debug(`ID ${i.id}, Name ${i.name}, Sender ${i.sender}, Flags ${i.flags}`);
+        console.debug(`ID ${i.id}, Name ${i.name}, Sender ${i.sender}, Flags ${i.flags}, LocationId ${i.locationId}`);
         onItemReceived(i.id, i.name, i.sender, i.flags);
     }
 })
