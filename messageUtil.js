@@ -104,7 +104,7 @@ function loadFiles() {
 }
 
 function myCallback() {
-    console.debug(`Saved ${jsonItems}`);
+    console.debug(`Saved ${jsonItems.length} items.`);
 }
 
 function saveItems(collectedItems, filename) {

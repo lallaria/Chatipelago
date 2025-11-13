@@ -67,17 +67,14 @@ async function postInChat(message, trap, bounced) {
             if (trap) {
                 // Trap message triggers additional trap-related actions with response
                 await sendMessage(message);
-                const response = await streamerbotclient.doAction(config.streamerbotActions.trapMessage, { 
-                    customEventResponse: true 
-                });
+                const response = await streamerbotclient.doAction(
+                    config.streamerbotActions.trapMessage,
+                    { "timedOutUser": "Chat" },
+                    { customEventResponse: true }
+                );
+                console.debug('ResponseCustomEventResponseArgs:', response.customEventResponseArgs);
+                return response.customEventResponseArgs.randomUser0 || "Chat";
                 
-                // Extract the timedOutUser argument from the response
-                if (response.customEventResponseArgs && response.customEventResponseArgs.timedOutUser) {
-                    console.log('Chat user died:', response.customEventResponseArgs.timedOutUser);
-                    return response.customEventResponseArgs.timedOutUser;
-                }
-
-                return response;
             } else if (bounced) {
                 // Bounced message enables emote mode for 30 seconds
                 await sendMessage(message);
