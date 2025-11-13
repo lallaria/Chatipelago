@@ -8,7 +8,7 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as config from './config.js';
 import * as server from './server.js';
-import { streamerbotclient, reloadChatBotConfig, getStreamerbotStatus, getMixitupStatus } from './server.js';
+import { streamerbotclient, reloadChatBotConfig, getStreamerbotStatus, getMixitupStatus, attachStreamerbotListeners } from './server.js';
 import { connect as reconnectAP, getAPStatus, getAPUptime } from './archipelagoHelper.js';
 import { fileURLToPath } from 'url';
 import { getCustomConfigPath } from './config-unpacker-esm.js';
@@ -329,6 +329,10 @@ app.post('/api/streamerbot/connect', async (req, res) => {
       return res.status(500).json({ error: 'Streamer.bot client not initialized' });
     }
 
+    // Ensure listeners are attached before attempting connection
+    // This handles the case where the client was in a bad state
+    attachStreamerbotListeners();
+    
     await streamerbotclient.connect();
     res.json({ success: true, message: 'Streamer.bot connection initiated' });
   } catch (error) {

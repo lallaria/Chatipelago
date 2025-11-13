@@ -75,7 +75,8 @@ export {
   mixitupserver,
   reloadChatBotConfig,
   getStreamerbotStatus,
-  getMixitupStatus
+  getMixitupStatus,
+  attachStreamerbotListeners
 }
 
 var onEvent;
@@ -100,6 +101,31 @@ if (config.streamerbot && streamerbotclient === null) {
 }
 if (config.mixitup && mixitupserver === null) {
   initializeMixitup();
+}
+
+// Helper function to attach Command.Triggered listener
+// This ensures listeners are always attached, even after reconnection
+function attachStreamerbotListeners() {
+  if (!streamerbotclient) return;
+  
+  // Remove existing listener to avoid duplicates
+  streamerbotclient.removeAllListeners?.('Command.Triggered');
+  
+  // Set up event listener
+  streamerbotclient.on('Command.Triggered', (data) => {
+    const payload = data?.data || data;
+    const command = payload?.command; // e.g. '!search'
+    const name = payload?.name;       // e.g. 'ChatiChat'
+    const message = (payload?.message || '').trim(); // text after the command
+
+    const args = message.length > 0 ? message.split(/\s+/) : [];
+
+    if (name === 'ChatiChat' || name === 'ChatiMod') {
+      if (typeof onEvent === 'function') {
+          onEvent(`/${command}${args.length ? '+' + args.join('+') : ''}`);
+      }
+    }
+  });
 }
 
 function initializeStreamerbot() {
@@ -127,12 +153,21 @@ function initializeStreamerbot() {
   const streamerbotConfigWithErrorHandler = {
     ...config.streamerbotConfig,
     onError: (err) => {
-      // Suppress full traceback, just log the error message
-      console.error('[Streamer.bot] Connection error:', err.message);
+      // Log error without full stack trace for cleaner output
+      const errorMsg = err?.message || String(err);
+      if (errorMsg.includes('ECONNREFUSED') || errorMsg.includes('ENOTFOUND')) {
+        console.error('[Streamer.bot] Connection error: Server not available. Ensure Streamer.bot is running and WebSocket server is enabled.');
+      } else if (errorMsg.includes('WebSocket closed') || errorMsg.includes('connection was closed')) {
+        console.error('[Streamer.bot] Connection error: WebSocket closed unexpectedly');
+      } else {
+        console.error('[Streamer.bot] Connection error:', errorMsg);
+      }
     },
     onConnect: (data) => {
       streamerbotConnectionStart = {timestamp: Date.now(), version: data.version};
       console.info('[Streamer.bot] Successfully connected');
+      // Ensure listeners are attached on successful connection
+      attachStreamerbotListeners();
     },
     onDisconnect: () => {
       streamerbotConnectionStart = null;
@@ -143,21 +178,8 @@ function initializeStreamerbot() {
   streamerbotclient = new StreamerbotClient(streamerbotConfigWithErrorHandler);
   webhook.setStreamerbotClient(streamerbotclient);
 
-  // Set up event listeners
-  streamerbotclient.on('Command.Triggered', (data) => {
-    const payload = data?.data || data;
-    const command = payload?.command; // e.g. '!search'
-    const name = payload?.name;       // e.g. 'ChatiChat'
-    const message = (payload?.message || '').trim(); // text after the command
-
-    const args = message.length > 0 ? message.split(/\s+/) : [];
-
-    if (name === 'ChatiChat' || name === 'ChatiMod') {
-      if (typeof onEvent === 'function') {
-          onEvent(`/${command}${args.length ? '+' + args.join('+') : ''}`);
-      }
-    }
-  });
+  // Set up event listeners immediately (will be re-attached on connect if needed)
+  attachStreamerbotListeners();
   console.info(`Streamer.bot websocket client initialized`);
   
 }
