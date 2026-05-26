@@ -11,7 +11,7 @@
 	},
 	"mixitupConfig": {
 		"port": 8013,
-		"webhookUrl": "https://api.mixitupapp.com/api/webhook/"
+		"webhookUrl": "https://desktop.api.mixitupapp.com/api/webhook/"
 	},
 	"streamerbotConfig": {
 		"host": "localhost",
