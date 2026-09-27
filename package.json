@@ -44,12 +44,9 @@
   "dependencies": {
     "@streamerbot/client": "^1.12.2",
     "archipelago.js": "^2.0.4",
-    "busboy": "^1.6.0",
     "cors": "^2.8.5",
-    "decompress": "^4.2.1",
     "express": "^4.18.2",
     "multer": "^2.0.2",
-    "shelljs": "^0.9.1",
     "ws": "^8.18.0",
     "yaml": "^2.3.4"
   }

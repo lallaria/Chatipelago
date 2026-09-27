@@ -112,9 +112,6 @@ All messages support variable substitution and random selection from multiple va
 - `multer` v2.0.2 - File upload handling
 - `cors` v2.8.5 - Cross-origin resource sharing
 - `yaml` v2.3.4 - YAML parsing
-- `busboy` v1.6.0 - HTTP POST parsing
-- `decompress` v4.2.1 - Archive handling
-- `shelljs` v0.9.1 - Shell command execution
 
 ### Build Dependencies
 - `esbuild` v0.25.0 - Code bundling for standalone executables
