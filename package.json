@@ -28,18 +28,9 @@
   "homepage": "https://github.com/lallaria/Chatipelago#readme",
   "devDependencies": {
     "esbuild": "^0.28.2",
-    "eslint": "^8.57.1",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
     "postject": "^1.0.0-alpha.6"
-  },
-  "eslintConfig": {
-    "env": {
-      "es2022": true,
-      "node": true
-    },
-    "parserOptions": {
-      "ecmaVersion": "latest",
-      "sourceType": "module"
-    }
   },
   "dependencies": {
     "@streamerbot/client": "^2.0.1",
