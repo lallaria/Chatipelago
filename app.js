@@ -367,7 +367,9 @@ function restartChatipelago() {
 async function startServer() {
   await ensureTmpDir();
   
-  const server = app.listen(ADMIN_PORT, () => {
+  const server = app.listen(ADMIN_PORT, (error) => {
+    // Express 5 also passes listen errors here; the 'error' listener below handles them.
+    if (error) return;
     console.log(`Admin API server running on port ${ADMIN_PORT}`);
     console.log(`CORS enabled for: https://chati.prismativerse.com`);
     console.info('Chatipelago started successfully!');
