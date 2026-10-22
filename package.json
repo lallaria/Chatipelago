@@ -42,7 +42,7 @@
     }
   },
   "dependencies": {
-    "@streamerbot/client": "^1.12.2",
+    "@streamerbot/client": "^2.0.1",
     "archipelago.js": "^2.0.4",
     "cors": "^2.8.5",
     "express": "^4.18.2",
@@ -51,7 +51,6 @@
     "yaml": "^2.3.4"
   },
   "allowScripts": {
-    "esbuild": true,
-    "bufferutil": true
+    "esbuild": true
   }
 }
