@@ -25,10 +25,10 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22.x'
           cache: 'npm'
@@ -110,7 +110,7 @@ jobs:
       
       - name: Upload zip archive (Windows)
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chatipelago-windows-${{ steps.package_version.outputs.version }}
           path: chatipelago-windows-${{ steps.package_version.outputs.version }}.zip
@@ -118,7 +118,7 @@ jobs:
       
       - name: Upload archive (Unix)
         if: runner.os != 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chatipelago-${{ env.OS_NAME }}-${{ steps.package_version.outputs.version }}
           path: chatipelago-${{ env.OS_NAME }}-${{ steps.package_version.outputs.version }}.${{ env.ARCHIVE_EXT }}
@@ -130,7 +130,7 @@ jobs:
     if: github.event_name == 'release' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       
@@ -148,12 +148,12 @@ jobs:
           echo "Release tag: $TAG"
       
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
       
       - name: Upload to release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || steps.tag_version.outputs.tag }}
           name: Release ${{ github.event_name == 'release' && github.event.release.tag_name || steps.tag_version.outputs.tag }}
