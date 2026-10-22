@@ -190,10 +190,11 @@ app.put('/api/messages/:filename', async (req, res) => {
 
 // Endpoint for main client to send logs
 app.post('/api/console/log', (req, res) => {
+  const body = req.body ?? {};
   const logEntry = {
-    timestamp: req.body.timestamp || new Date().toISOString(),
-    message: req.body.message || '',
-    level: req.body.level || 'log'
+    timestamp: body.timestamp || new Date().toISOString(),
+    message: body.message || '',
+    level: body.level || 'log'
   };
   
   // Send to all SSE listeners
@@ -285,7 +286,9 @@ async function ensureTmpDir() {
 async function startServer() {
   await ensureTmpDir();
   
-  const server = app.listen(PORT, () => {
+  const server = app.listen(PORT, (err) => {
+    // Express 5 also passes listen errors here; the 'error' listener below handles them.
+    if (err) return;
     console.log(`Admin API server running on port ${PORT}`);
     console.log(`CORS enabled for: https://chati.prismativerse.com`);
   });

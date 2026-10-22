@@ -27,27 +27,21 @@
   },
   "homepage": "https://github.com/lallaria/Chatipelago#readme",
   "devDependencies": {
-    "esbuild": "^0.25.0",
-    "eslint": "^8.57.1",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
     "postject": "^1.0.0-alpha.6"
   },
-  "eslintConfig": {
-    "env": {
-      "es2022": true,
-      "node": true
-    },
-    "parserOptions": {
-      "ecmaVersion": "latest",
-      "sourceType": "module"
-    }
-  },
   "dependencies": {
-    "@streamerbot/client": "^1.12.2",
+    "@streamerbot/client": "^2.0.1",
     "archipelago.js": "^2.0.4",
     "cors": "^2.8.5",
-    "express": "^4.18.2",
+    "express": "^5.3.0",
     "multer": "^2.0.2",
     "ws": "^8.18.0",
     "yaml": "^2.3.4"
+  },
+  "allowScripts": {
+    "esbuild": true
   }
 }

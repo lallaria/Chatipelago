@@ -54,7 +54,7 @@ The system now uses `config.json` instead of `config.js`:
   },
   "mixitupConfig": {
     "port": 8013,
-    "webhookUrl": "https://mixitup.webhook/"
+    "webhookUrl": "https://desktop.api.mixitup.bot/api/webhook/<webhook-id>?secret=<secret>"
   },
   "streamerbotConfig": {
     "port": 8014,
