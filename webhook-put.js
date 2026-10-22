@@ -20,6 +20,23 @@ function setStreamerbotClient(client) {
     streamerbotclient = client;
 }
 
+// Mix It Up retired these hosts; webhook URLs on them differ from current ones only by host.
+const RETIRED_WEBHOOK_HOSTS = ['api.mixitupapp.com', 'desktop.api.mixitupapp.com'];
+const WEBHOOK_HOST = 'desktop.api.mixitup.bot';
+let warnedRetiredHost = false;
+
+function mixitupWebhookUrl() {
+    const url = new URL(config.mixitupConfig.webhookUrl);
+    if (RETIRED_WEBHOOK_HOSTS.includes(url.hostname)) {
+        if (!warnedRetiredHost) {
+            console.warn(`[MixItUp] webhookUrl uses retired host ${url.hostname}; sending to ${WEBHOOK_HOST} instead. Update webhookUrl in config.json.`);
+            warnedRetiredHost = true;
+        }
+        url.hostname = WEBHOOK_HOST;
+    }
+    return url;
+}
+
 async function sendMessage(message) {
     await streamerbotclient.sendMessage('twitch', message, { bot: true });
 }
@@ -28,8 +45,13 @@ async function postInChat(message, trap, bounced) {
     console.log(`Posting "${message}" in chat`);
 
     if (config.mixitup) {
-        let response = await post(message, config.mixitupConfig.webhookUrl, trap, bounced);
-        return response.text;
+        try {
+            let response = await post(message, mixitupWebhookUrl(), trap, bounced);
+            return response.text;
+        } catch (error) {
+            console.error('[MixItUp] Failed to post to webhook:', error.cause?.message || error.message);
+            return;
+        }
     };
     
     async function post(message, url, trap, bounced) {
@@ -41,7 +63,10 @@ async function postInChat(message, trap, bounced) {
             },
             body: JSON.stringify(content)
         });
-        
+        if (!response.ok) {
+            throw new Error(`webhook returned HTTP ${response.status}; copy the URL again from Mix It Up's Webhooks page`);
+        }
+
         // Check if response has content before parsing JSON
         const text = await response.text();
         if (!text || text.trim().length === 0) {
